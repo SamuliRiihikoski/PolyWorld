@@ -6,5 +6,5 @@ uniform mat4 proj_matrix;
 
 void main()
 {
-    color = vec4(0.5, 0.5, 0.5, 1.0);
+    color = vec4(0.6, 0.6, 0.6, 1.0);
 } 

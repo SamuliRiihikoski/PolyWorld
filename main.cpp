@@ -12,6 +12,7 @@
 #include "headers/Shaders.h"
 #include "headers/Scene.h"
 #include "headers/Gradient.h"
+#include "headers/RayIntersection.h"
 
 #define SHADER_HEADER "#version 330 core\n"
 #define SHADER_STR(x) #x
@@ -29,13 +30,17 @@ void display(GLFWwindow* window, double currentTime);
 
 // settings
 int appWidth = 1200, appHeight = 1200;
+double xPos, yPos;
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = appWidth / 2.0f;
 float lastY = appHeight / 2.0f;
+
 bool firstMouse = true;
 bool LMB_free = true;
+int dragCounter = 0;
+glm::vec3 mouseWorldPos;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -44,7 +49,6 @@ float lastFrame = 0.0f;
 unsigned int VAO, VBO, EBO;
 GLuint renderingProgram;
 
-float cameraX, cameraY, cameraZ;
 GLuint mvLoc, projLoc;
 float aspect;
 glm::mat4 pMat, vMat, mMat, mvMat;
@@ -112,8 +116,6 @@ void init(GLFWwindow* window)
 
 	addGradientBG();
 
-	cameraX = 0.0f; cameraY = 0.0f, cameraZ = 16.0f;
-
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &EBO);
 	glGenBuffers(1, &VBO);
@@ -151,9 +153,9 @@ void display(GLFWwindow* window, double currentTime)
 
 	glfwGetFramebufferSize(window, &appWidth, &appHeight);
 	aspect = (float)appWidth / (float)appHeight;
-	pMat = glm::perspective(1.0472f, aspect, 0.1f, 1000.0f);
+	pMat = glm::perspective(glm::radians(camera.Zoom), (float)appWidth / (float)appHeight, 0.1f, 100.0f);
 
-	vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
+	vMat = camera.GetViewMatrix();
 	mvMat = vMat;
 
 	glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat));
@@ -176,6 +178,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {		
+    xPos = xpos;
+    yPos = ypos;
+    
+    if (LMB_free == false)
+        dragCounter++;
 	
 	// NDC
 	float x = 2 * (xpos / appWidth) - 1.0f;
@@ -192,8 +199,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	glm::vec3 ray_wor = (glm::inverse(mvMat) * ray_eye);
 	
 	// Let's calculate plane (0,0,1) - eyeRay intersection
-	glm::vec3 p0 = glm::vec3(cameraX, cameraY, cameraZ);
-	glm::vec3 n = glm::vec3(0.0f, 0.0f, -1.0f);
+	glm::vec3 p0 = camera.Position;
+	glm::vec3 n = glm::vec3(0.0f, 0.0f, 4.0f);
 
 	float p0_n = glm::dot(p0, n);
 	float d_n = glm::dot(ray_wor, n);
@@ -201,13 +208,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	glm::vec3 final = ray_wor - p0_n;
 	final = final / d_n;
 
-	glm::vec3 result = p0 + final*ray_wor;
-
-	// OUTCOME
-    std::cout << result.x << " : " << result.y << std::endl;
-
-
-	if (firstMouse)
+    // GLOBAL VARIABLE
+	mouseWorldPos = p0 + final*ray_wor;
+    std::cout << "P: " << mouseWorldPos.x << " " << mouseWorldPos.y << std::endl;
+    
+    if (firstMouse)
     {
         lastX = xpos;
         lastY = ypos;
@@ -232,6 +237,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 void processInput(GLFWwindow *window)
 {
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
@@ -247,9 +253,24 @@ void processInput(GLFWwindow *window)
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && LMB_free) {
 		LMB_free = false;
 		std::cout << "Mouse Button 1 pressed" << std::endl;
+
+        float t = rayTriangleIntersection(Vertex(camera.Position.x, camera.Position.y, camera.Position.z), 
+                            Vertex(mouseWorldPos.x, mouseWorldPos.y, mouseWorldPos.z),
+                            Vertex(scene.vertices[0].pos[0], scene.vertices[0].pos[1], scene.vertices[0].pos[2]),                     
+                            Vertex(scene.vertices[1].pos[0], scene.vertices[1].pos[1], scene.vertices[1].pos[2]),
+                            Vertex(scene.vertices[2].pos[0], scene.vertices[2].pos[1], scene.vertices[2].pos[2]),
+                            1.0f);
+
+        if (t != 5)
+            std::cout << "BackGround only..." << std::endl;
+        else
+            std::cout << "Triangle Found!" << std::endl;
+
 	}
+    
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE && LMB_free == false) {
 			LMB_free = true;
+            dragCounter = 0;
 			std::cout << "Mouse Button 1 released" << std::endl; 
 	}
 }

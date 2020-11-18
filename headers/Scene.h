@@ -2,25 +2,7 @@
 //#include "Mesh.h" NEXT
 #include <string>
 #include <iostream>
-
-struct Vertex {
-    float pos[3];
-
-    Vertex(float x, float y, float z) {
-        pos[0] = x;
-        pos[1] = y;
-        pos[2] = z;
-    }
-};
-
-struct Polygon {
-    int id;
-    std::vector<unsigned int> verticesID;
-
-    Polygon(int id) {
-        id = id;
-    }
-};
+#include "Primitives.h"
 
 class Scene {
 
