@@ -9,7 +9,7 @@
 #include <vector>
 #include "headers/Camera.h"
 #include "headers/Utils.h"
-#include "headers/Shaders.h"
+#include "headers/ShaderProgram.h"
 #include "headers/Scene.h"
 #include "headers/Gradient.h"
 #include "headers/RayIntersection.h"
@@ -20,48 +20,39 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window);
+//void processInput(GLFWwindow *window);
 void mygl_GradientBackground( float top_r, float top_g, float top_b, float top_a,
                               float bot_r, float bot_g, float bot_b, float bot_a);
 
 void init(GLFWwindow* window); 
 void display(GLFWwindow* window, double currentTime); 
 
-
 // settings
 int appWidth = 1200, appHeight = 1200;
 double xPos, yPos;
-
-// camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = appWidth / 2.0f;
-float lastY = appHeight / 2.0f;
+int lastX, lastY;
 
 bool firstMouse = true;
 bool LMB_free = true;
 int dragCounter = 0;
 glm::vec3 mouseWorldPos;
 
-// timing
-float deltaTime = 0.0f;	// time between current frame and last frame
-float lastFrame = 0.0f;
-
 unsigned int VAO, VBO, EBO;
-GLuint renderingProgram;
-
-GLuint mvLoc, projLoc;
-float aspect;
-glm::mat4 pMat, vMat, mMat, mvMat;
 
 // create scene
 Scene scene("scene1");
 
-glm::mat4 model 	= 	glm::mat4(1.0f);
-glm::mat4 view      = 	glm::mat4(1.0f);
-glm::mat4 projection = 	glm::mat4(1.0f);
+// Create camera
+OrbitCamera orbitCamera;
+float gYaw = 0.0f;
+float gPitch = 0.0f;
+float gRadius = 10.0f;
+const float MOUSE_SENSITIVITY = 0.25f;
 
 int main(void) 
 {
+
+    glm::vec3 cubePos = glm::vec3(0.0f, -1.0f, 0.0f); 
 
     scene.initScene();
 	//Shader ourShader("vertShader.glsl", "fragShader.glsl");
@@ -87,13 +78,35 @@ int main(void)
 		return 0;
 	
 	glfwSwapInterval(1);
-	init(window);
+	
+    ShaderProgram shaderProgram;
+    shaderProgram.loadShader("shaders/vertShader.glsl", "shaders/fragShader.glsl");
+
+    init(window);
 
     while (!glfwWindowShouldClose(window)) {
-	
-		processInput(window);
+
+        glm::mat4 view, projection;
+        glm::mat4 model(1.0f);
+
+		//processInput(window);
 
 		display(window, glfwGetTime());
+
+        orbitCamera.setLookAt(cubePos);
+        orbitCamera.rotate(gYaw, gPitch);
+        orbitCamera.setRadius(gRadius);
+
+        model = glm::translate(model, cubePos);
+        view = orbitCamera.getViewMatrix();
+        projection = glm::perspective(glm::radians(45.0f), (float)appWidth / (float)appHeight, 0.1f, 100.0f);
+
+        shaderProgram.use();
+
+        shaderProgram.setUniform("model", model);
+        shaderProgram.setUniform("view", view);
+        shaderProgram.setUniform("projection", projection);
+
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
@@ -112,9 +125,8 @@ int main(void)
 
 void init(GLFWwindow* window) 
 {
-	renderingProgram = Utils::createShaderProgram("shaders/vertShader.glsl", "shaders/fragShader.glsl");
 
-	addGradientBG();
+	//addGradientBG();
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &EBO);
@@ -145,22 +157,8 @@ void display(GLFWwindow* window, double currentTime)
 
 	mygl_GradientBackground( 0.1, 0.1, 0.1, 1.0,
                              0.05, 0.05, 0.05, 1.0 );
-	
-	glUseProgram(renderingProgram);	
-
-	mvLoc = glGetUniformLocation(renderingProgram, "mv_matrix");
-	projLoc = glGetUniformLocation(renderingProgram, "proj_matrix");
 
 	glfwGetFramebufferSize(window, &appWidth, &appHeight);
-	aspect = (float)appWidth / (float)appHeight;
-	pMat = glm::perspective(glm::radians(camera.Zoom), (float)appWidth / (float)appHeight, 0.1f, 100.0f);
-
-	vMat = camera.GetViewMatrix();
-	mvMat = vMat;
-
-	glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat));
-	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
-
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -177,13 +175,32 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{		
+{	
+    static glm::vec2 lastMousePos = glm::vec2(0, 0);
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS)
+    {   
+        gYaw -= ((float)xpos - lastMousePos.x) * MOUSE_SENSITIVITY;
+        gPitch += ((float)ypos - lastMousePos.y) * MOUSE_SENSITIVITY;
+    }
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
+    {
+        float dx = 0.01f * ((float)xpos - lastMousePos.x);
+        float dy = 0.01f * ((float)ypos - lastMousePos.y);
+        gRadius += dx -dy;
+    }
+
+    lastMousePos.x = (float)xpos;
+    lastMousePos.y = (float)ypos;
+
+
     xPos = xpos;
     yPos = ypos;
     
     if (LMB_free == false)
         dragCounter++;
-	
+	/*
 	// NDC
 	float x = 2 * (xpos / appWidth) - 1.0f;
 	float y = 1.0f - 2.0f * (ypos / appHeight);
@@ -212,44 +229,32 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	mouseWorldPos = p0 + final*ray_wor;
     std::cout << "P: " << mouseWorldPos.x << " " << mouseWorldPos.y << std::endl;
     
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
+    lastX = xpos;
+    lastY = ypos;
 
     float xoffset = xpos - lastX;
     float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
 
     lastX = xpos;
     lastY = ypos;
+    */
 
-    camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    camera.ProcessMouseScroll(yoffset);
+    //camera.ProcessMouseScroll(yoffset);
 }
 
 void processInput(GLFWwindow *window)
 {
-
+    std::cout << "aa";
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
-
+    /*
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && LMB_free) {
 		LMB_free = false;
 		std::cout << "Mouse Button 1 pressed" << std::endl;
@@ -267,6 +272,7 @@ void processInput(GLFWwindow *window)
             std::cout << "Triangle Found!" << std::endl;
 
 	}
+    */
     
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE && LMB_free == false) {
 			LMB_free = true;
