@@ -10,9 +10,8 @@
 #include "headers/Camera.h"
 #include "headers/Utils.h"
 #include "headers/ShaderProgram.h"
-#include "headers/Scene.h"
 #include "headers/Gradient.h"
-#include "headers/RayIntersection.h"
+#include "headers/RayHit.h"
 
 #define SHADER_HEADER "#version 330 core\n"
 #define SHADER_STR(x) #x
@@ -42,6 +41,9 @@ unsigned int VAO, VBO, EBO;
 // create scene
 Scene scene("scene1");
 
+//Hit detection class
+RayHit rayHit;
+
 // Create camera
 OrbitCamera orbitCamera;
 float gYaw = 0.0f;
@@ -49,10 +51,14 @@ float gPitch = 0.0f;
 float gRadius = 10.0f;
 const float MOUSE_SENSITIVITY = 0.25f;
 
+ // Matrixs
+glm::mat4 view, projection;
+glm::mat4 model(1.0f);
+
 int main(void) 
 {
 
-    glm::vec3 cubePos = glm::vec3(0.0f, -1.0f, 0.0f); 
+    glm::vec3 cubePos = glm::vec3(0.0f, 0.0f, 0.0f); 
 
     scene.initScene();
 	//Shader ourShader("vertShader.glsl", "fragShader.glsl");
@@ -86,10 +92,15 @@ int main(void)
 
     while (!glfwWindowShouldClose(window)) {
 
-        glm::mat4 view, projection;
-        glm::mat4 model(1.0f);
-
 		//processInput(window);
+
+        // Matrixs
+        glm::mat4 view1; 
+        glm::mat4 projection1;
+        glm::mat4 model1(1.0f);
+        view = view1;
+        projection = projection1;
+        model = model1;
 
 		display(window, glfwGetTime());
 
@@ -171,7 +182,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 }
 
-
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -194,51 +204,14 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     lastMousePos.x = (float)xpos;
     lastMousePos.y = (float)ypos;
 
-
     xPos = xpos;
     yPos = ypos;
     
     if (LMB_free == false)
         dragCounter++;
-	/*
-	// NDC
-	float x = 2 * (xpos / appWidth) - 1.0f;
-	float y = 1.0f - 2.0f * (ypos / appHeight);
-	float z = 1.0f;
-	glm::vec3 ray_nds = glm::vec3(x, y, z);
-	glm::vec4 ray_clip = glm::vec4(x, y, -1.0f, 1.0f);
 
-	// Camera (EYE) Coordinates
-	glm::vec4 ray_eye = glm::inverse(pMat) * ray_clip;
-	ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0f, 0.0f);
-	
-	// World coordinate
-	glm::vec3 ray_wor = (glm::inverse(mvMat) * ray_eye);
-	
-	// Let's calculate plane (0,0,1) - eyeRay intersection
-	glm::vec3 p0 = camera.Position;
-	glm::vec3 n = glm::vec3(0.0f, 0.0f, 4.0f);
-
-	float p0_n = glm::dot(p0, n);
-	float d_n = glm::dot(ray_wor, n);
-
-	glm::vec3 final = ray_wor - p0_n;
-	final = final / d_n;
-
-    // GLOBAL VARIABLE
-	mouseWorldPos = p0 + final*ray_wor;
-    std::cout << "P: " << mouseWorldPos.x << " " << mouseWorldPos.y << std::endl;
-    
-    lastX = xpos;
-    lastY = ypos;
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-    */
-
+    int hitID = rayHit.rayHitPolygonID(xpos, ypos, appWidth, appHeight, 
+                                       view, projection, model, orbitCamera, scene); // -1 = backround, else polygons ID
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
