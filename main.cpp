@@ -94,10 +94,10 @@ int main(void)
         // Matrixs
         glm::mat4 view1; 
         glm::mat4 projection1;
-        //glm::mat4 model1(1.0f);
+        glm::mat4 model1(1.0f);
         view = view1;
         projection = projection1;
-        //model = model1;
+        model = model1;
 
 		display(window, glfwGetTime());
 
@@ -111,9 +111,10 @@ int main(void)
 
         shaderProgram.use();
 
-        //shaderProgram.setUniform("model", model);
+        shaderProgram.setUniform("model", model);
         shaderProgram.setUniform("view", view);
         shaderProgram.setUniform("projection", projection);
+        shaderProgram.setUniform("acolor", glm::vec4(0.6f, 0.6f, 0.6f, 1.0f));
 
 
 		glBindVertexArray(VAO);

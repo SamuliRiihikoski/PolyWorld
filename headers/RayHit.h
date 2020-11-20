@@ -61,10 +61,12 @@ inline glm::vec3 RayHit::rayPlaneHitPoint()
 
     float dot = glm::dot(n, ray_wor);
 
+    if (dot < 0.001)
+        return glm::vec3(-1,-1,-1); // Face not facing to ray 
+
     glm::vec3 diff = p0 - orbitCamera.position();
 
     float t = glm::dot(diff, n) /dot;
-    std::cout << "t: " << t << std::endl;
 
     glm::vec3 point = orbitCamera.position() + (ray_wor * t);
 
