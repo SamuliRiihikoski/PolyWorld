@@ -41,9 +41,6 @@ unsigned int VAO, VBO, EBO;
 // create scene
 Scene scene("scene1");
 
-//Hit detection class
-RayHit rayHit;
-
 // Create camera
 OrbitCamera orbitCamera;
 float gYaw = 0.0f;
@@ -97,10 +94,10 @@ int main(void)
         // Matrixs
         glm::mat4 view1; 
         glm::mat4 projection1;
-        glm::mat4 model1(1.0f);
+        //glm::mat4 model1(1.0f);
         view = view1;
         projection = projection1;
-        model = model1;
+        //model = model1;
 
 		display(window, glfwGetTime());
 
@@ -114,7 +111,7 @@ int main(void)
 
         shaderProgram.use();
 
-        shaderProgram.setUniform("model", model);
+        //shaderProgram.setUniform("model", model);
         shaderProgram.setUniform("view", view);
         shaderProgram.setUniform("projection", projection);
 
@@ -210,8 +207,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     if (LMB_free == false)
         dragCounter++;
 
-    int hitID = rayHit.rayHitPolygonID(xpos, ypos, appWidth, appHeight, 
-                                       view, projection, model, orbitCamera, scene); // -1 = backround, else polygons ID
+    //Hit detection class
+    RayHit rayHit(xpos, ypos, appWidth, appHeight, view, projection, model, orbitCamera, scene);
+    glm::vec3 result = rayHit.rayPlaneHitPoint();
+
+    std::cout << "PlaneHit: x: " << result.x << " y: " << result.y << " z: " << result.z << std::endl;
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called

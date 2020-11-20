@@ -11,6 +11,7 @@ public:
     glm::mat4 getViewMatrix() const;
     virtual void rotate(float yaw, float pitch) {}
     glm::vec3 position() const;
+    glm::vec3 getTargetPos() const;
 
 protected:
     Camera();
@@ -38,6 +39,11 @@ inline glm::mat4 Camera::getViewMatrix() const
 inline glm::vec3 Camera::position() const
 {
     return mPosition;
+}
+
+inline glm::vec3 Camera::getTargetPos() const
+{
+    return mTargetPos;
 }
 
 /****  ORBIT CAMERA ****/
