@@ -1,5 +1,4 @@
-New 3d modelling app. works only in linux at the moment.
-BTW. Nothing works :)
+New 3d modelling app. Testing on linux only but this should also work in Windows OS.
 
 Done
 - Basic Ray/Triangle intersection detection works.
