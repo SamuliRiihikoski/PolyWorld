@@ -1,31 +1,30 @@
+#ifndef SCENE_H
+#define SCENE_H
+
 #include <vector>
-//#include "Mesh.h" NEXT
+#include "Mesh.h"
 #include <string>
 #include <iostream>
 #include "Primitives.h"
 
 class Scene {
 
-    std::string name;
-   
-    //std::vector<Mesh> meshes; NEXT
-
-public:
-
-    std::vector<Vertex> vertices;
-    std::vector<Polygon> faces;
-
-    void initScene();
+    int ID;
+    string name;
+    std::vector<Mesh> meshes;
     
+public:
+     
     Scene(std::string name) : name(name) {
         std::cout << "Created new scene: " <<  name << std::endl;
         initScene();
     }
 
-   
+    void initScene();
     void addScene();
     void removeScene();
     void updateScene();
+    Mesh getMesh(int index);
 
 };
 
@@ -33,14 +32,16 @@ inline void Scene::initScene()
 {
     std::cout << "Initializing scene..." << std::endl;
 
-    vertices.push_back(Vertex(-1.0f, 0.0f, 0.0f));
-	vertices.push_back(Vertex(1.0f, 0.0f, 0.0f));
-	vertices.push_back(Vertex(0.0f, 2.0f, 0.0f));
+    meshes.push_back(Mesh("Cube"));
 
-    faces.push_back(Polygon(0));
-    faces[0].verticesID.push_back(0);
-    faces[0].verticesID.push_back(1);
-    faces[0].verticesID.push_back(2);
+    meshes[0].vertices.push_back(Vertex(-1.0f, 0.0f, 0.0f));
+	meshes[0].vertices.push_back(Vertex(1.0f, 0.0f, 0.0f));
+	meshes[0].vertices.push_back(Vertex(0.0f, 2.0f, 0.0f));
+
+    meshes[0].faces.push_back(Polygon(0));
+    meshes[0].faces[0].verticesID.push_back(0);
+    meshes[0].faces[0].verticesID.push_back(1);
+    meshes[0].faces[0].verticesID.push_back(2);
 
     updateScene();
 
@@ -61,3 +62,10 @@ inline void Scene::updateScene()
 {
 
 }
+
+inline Mesh Scene::getMesh(int index)
+{
+    return meshes[index];
+}
+
+#endif

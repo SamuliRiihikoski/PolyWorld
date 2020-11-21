@@ -12,9 +12,19 @@
 #include "headers/ShaderProgram.h"
 #include "headers/Gradient.h"
 #include "headers/RayHit.h"
+#include "headers/App.h"
 
 #define SHADER_HEADER "#version 330 core\n"
 #define SHADER_STR(x) #x
+
+struct Matrixs
+{
+    glm::mat4 view;
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 projection;
+};
+
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -48,12 +58,14 @@ float gPitch = 0.0f;
 float gRadius = 10.0f;
 const float MOUSE_SENSITIVITY = 0.25f;
 
- // Matrixs
-glm::mat4 view, projection;
-glm::mat4 model(1.0f);
+Matrixs matrixs;
+
+//Main Application Class
+App app;
 
 int main(void) 
 {
+    app.newScene();
 
     glm::vec3 cubePos = glm::vec3(0.0f, 0.0f, 0.0f); 
 
@@ -95,9 +107,9 @@ int main(void)
         glm::mat4 view1; 
         glm::mat4 projection1;
         glm::mat4 model1(1.0f);
-        view = view1;
-        projection = projection1;
-        model = model1;
+        matrixs.view = view1;
+        matrixs.projection = projection1;
+        matrixs.model = model1;
 
 		display(window, glfwGetTime());
 
@@ -105,15 +117,15 @@ int main(void)
         orbitCamera.rotate(gYaw, gPitch);
         orbitCamera.setRadius(gRadius);
 
-        model = glm::translate(model, cubePos);
-        view = orbitCamera.getViewMatrix();
-        projection = glm::perspective(glm::radians(45.0f), (float)appWidth / (float)appHeight, 0.1f, 100.0f);
+        matrixs.model = glm::translate(matrixs.model, cubePos);
+        matrixs.view = orbitCamera.getViewMatrix();
+        matrixs.projection = glm::perspective(glm::radians(45.0f), (float)appWidth / (float)appHeight, 0.1f, 100.0f);
 
         shaderProgram.use();
 
-        shaderProgram.setUniform("model", model);
-        shaderProgram.setUniform("view", view);
-        shaderProgram.setUniform("projection", projection);
+        shaderProgram.setUniform("model", matrixs.model);
+        shaderProgram.setUniform("view", matrixs.view);
+        shaderProgram.setUniform("projection", matrixs.projection);
         shaderProgram.setUniform("acolor", glm::vec4(0.6f, 0.6f, 0.6f, 1.0f));
 
 
@@ -134,9 +146,8 @@ int main(void)
 
 void init(GLFWwindow* window) 
 {
-
-	//addGradientBG();
-
+    Mesh mesh = app.getScene(0).getMesh(0);
+    
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &EBO);
 	glGenBuffers(1, &VBO);
@@ -144,11 +155,11 @@ void init(GLFWwindow* window)
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, (scene.vertices.size()*3) * sizeof(float), scene.vertices.data(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (mesh.vertices.size()*3) * sizeof(float), mesh.vertices.data(), GL_DYNAMIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, scene.faces[0].verticesID.size()*sizeof(unsigned int), 
-													scene.faces[0].verticesID.data(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.faces[0].verticesID.size()*sizeof(unsigned int), 
+													mesh.faces[0].verticesID.data(), GL_DYNAMIC_DRAW);
 	
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -164,8 +175,8 @@ void display(GLFWwindow* window, double currentTime)
 	glClearColor(0.08f, 0.08f, 0.06f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	mygl_GradientBackground( 0.1, 0.1, 0.1, 1.0,
-                             0.05, 0.05, 0.05, 1.0 );
+	mygl_GradientBackground( 0.2, 0.2, 0.2, 1.0,
+                             0.1, 0.1, 0.1, 1.0 );
 
 	glfwGetFramebufferSize(window, &appWidth, &appHeight);
 }
@@ -209,10 +220,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
         dragCounter++;
 
     //Hit detection class
-    RayHit rayHit(xpos, ypos, appWidth, appHeight, view, projection, model, orbitCamera, scene);
+    RayHit rayHit(xpos, ypos, appWidth, appHeight, matrixs.view, matrixs.projection, matrixs.model, orbitCamera, app);
     glm::vec3 result = rayHit.rayPlaneHitPoint();
-
-    std::cout << "PlaneHit: x: " << result.x << " y: " << result.y << " z: " << result.z << std::endl;
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
@@ -224,29 +233,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 void processInput(GLFWwindow *window)
 {
-    std::cout << "aa";
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    /*
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && LMB_free) {
-		LMB_free = false;
-		std::cout << "Mouse Button 1 pressed" << std::endl;
-
-        float t = rayTriangleIntersection(Vertex(camera.Position.x, camera.Position.y, camera.Position.z), 
-                            Vertex(mouseWorldPos.x, mouseWorldPos.y, mouseWorldPos.z),
-                            Vertex(scene.vertices[0].pos[0], scene.vertices[0].pos[1], scene.vertices[0].pos[2]),                     
-                            Vertex(scene.vertices[1].pos[0], scene.vertices[1].pos[1], scene.vertices[1].pos[2]),
-                            Vertex(scene.vertices[2].pos[0], scene.vertices[2].pos[1], scene.vertices[2].pos[2]),
-                            1.0f);
-
-        if (t != 5)
-            std::cout << "BackGround only..." << std::endl;
-        else
-            std::cout << "Triangle Found!" << std::endl;
-
-	}
-    */
     
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE && LMB_free == false) {
 			LMB_free = true;

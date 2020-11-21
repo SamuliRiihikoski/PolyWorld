@@ -7,6 +7,7 @@
 #include <iostream>
 #include "Camera.h"
 #include "Scene.h"
+#include "App.h"
 
 class RayHit
 {
@@ -14,9 +15,9 @@ public:
     //float pointInsideTriangle(); // -1 = background, other wise returns polygon ID.
 
     RayHit(double& xpos, double& ypos, int& appWidth, int& appHeight, 
-           glm::mat4& view, glm::mat4& projection, glm::mat4& model, OrbitCamera& orbitCamera, Scene& scene) :
+           glm::mat4& view, glm::mat4& projection, glm::mat4& model, OrbitCamera& orbitCamera, App& app) :
            xpos(xpos), ypos(ypos), appWidth(appWidth), appHeight(appHeight), view(view), projection(projection),
-           model(model), orbitCamera(orbitCamera), scene(scene) 
+           model(model), orbitCamera(orbitCamera), app(app) 
            {
                t = 0.0f;
            }
@@ -30,15 +31,17 @@ private:
     int& appWidth, appHeight;
     glm::mat4& view, projection, model;
     OrbitCamera& orbitCamera;
-    Scene& scene;
+    App& app;
     float t;
 };
 
 inline glm::vec3 RayHit::rayPlaneHitPoint()
 {
-    glm::vec3 p0 = glm::vec3(scene.vertices[0].pos[0], scene.vertices[0].pos[1], scene.vertices[0].pos[2]);
-    glm::vec3 p1 = glm::vec3(scene.vertices[1].pos[0], scene.vertices[1].pos[1], scene.vertices[1].pos[2]);
-    glm::vec3 p2 = glm::vec3(scene.vertices[2].pos[0], scene.vertices[2].pos[1], scene.vertices[2].pos[2]);
+    Mesh mesh = app.getScene(0).getMesh(0);
+
+    glm::vec3 p0 = glm::vec3(mesh.vertices[0].pos[0], mesh.vertices[0].pos[1], mesh.vertices[0].pos[2]);
+    glm::vec3 p1 = glm::vec3(mesh.vertices[1].pos[0], mesh.vertices[1].pos[1], mesh.vertices[1].pos[2]);
+    glm::vec3 p2 = glm::vec3(mesh.vertices[2].pos[0], mesh.vertices[2].pos[1], mesh.vertices[2].pos[2]);
 
     // NDC
 	float x = 2 * (xpos / appWidth) - 1.0f;
@@ -77,9 +80,12 @@ inline glm::vec3 RayHit::rayPlaneHitPoint()
 
 inline float RayHit::pointOnTriangle(glm::vec3& point, glm::vec3& n)
 {
-    glm::vec3 p0 = glm::vec3(scene.vertices[0].pos[0], scene.vertices[0].pos[1], scene.vertices[0].pos[2]);
-    glm::vec3 p1 = glm::vec3(scene.vertices[1].pos[0], scene.vertices[1].pos[1], scene.vertices[1].pos[2]);
-    glm::vec3 p2 = glm::vec3(scene.vertices[2].pos[0], scene.vertices[2].pos[1], scene.vertices[2].pos[2]);
+    Mesh mesh = app.getScene(0).getMesh(0);
+
+    glm::vec3 p0 = glm::vec3(mesh.vertices[0].pos[0], mesh.vertices[0].pos[1], mesh.vertices[0].pos[2]);
+    glm::vec3 p1 = glm::vec3(mesh.vertices[1].pos[0], mesh.vertices[1].pos[1], mesh.vertices[1].pos[2]);
+    glm::vec3 p2 = glm::vec3(mesh.vertices[2].pos[0], mesh.vertices[2].pos[1], mesh.vertices[2].pos[2]);
+
 
     const float kNoIntersection =  FLT_MAX;
 
