@@ -7,11 +7,17 @@
 #include <iostream>
 #include "Primitives.h"
 
+struct Users 
+{
+    int ID;
+};
+
 class Scene {
 
     int ID;
     string name;
     std::vector<Mesh> meshes;
+    std::vector<Users> users;
     
 public:
      
@@ -42,6 +48,17 @@ inline void Scene::initScene()
     meshes[0].faces[0].verticesID.push_back(0);
     meshes[0].faces[0].verticesID.push_back(1);
     meshes[0].faces[0].verticesID.push_back(2);
+
+    meshes.push_back(Mesh("Test"));
+
+    meshes[1].vertices.push_back(Vertex(-1.0f, 0.0f, 0.0f));
+	meshes[1].vertices.push_back(Vertex(1.0f, 0.0f, 0.0f));
+	meshes[1].vertices.push_back(Vertex(0.0f, 2.0f, 0.0f));
+
+    meshes[1].faces.push_back(Polygon(0));
+    meshes[1].faces[0].verticesID.push_back(0);
+    meshes[1].faces[0].verticesID.push_back(1);
+    meshes[1].faces[0].verticesID.push_back(2);
 
     updateScene();
 

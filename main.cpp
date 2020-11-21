@@ -46,7 +46,7 @@ bool LMB_free = true;
 int dragCounter = 0;
 glm::vec3 mouseWorldPos;
 
-unsigned int VAO, VBO, EBO;
+unsigned int VAO, VBO[2], EBO[2];
 
 // create scene
 Scene scene("scene1");
@@ -62,6 +62,7 @@ Matrixs matrixs;
 
 //Main Application Class
 App app;
+float T;
 
 int main(void) 
 {
@@ -128,16 +129,39 @@ int main(void)
         shaderProgram.setUniform("projection", matrixs.projection);
         shaderProgram.setUniform("acolor", glm::vec4(0.6f, 0.6f, 0.6f, 1.0f));
 
-
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+        glEnable( GL_DEPTH_TEST );
+        glEnable( GL_POLYGON_OFFSET_FILL );
+        glPolygonOffset( 1.0f, 1.0f );
+  
+        glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+
+        if (T != FLT_MAX && T != -1) // -1 facing angle > 90 degrees 
+        {
+            shaderProgram.setUniform("acolor", glm::vec4(0.7f, 0.4f, 0.4f, 1.0f));
+          
+            glEnable( GL_DEPTH_TEST );
+            glEnable( GL_POLYGON_OFFSET_FILL );
+            glPolygonOffset( -1.0f, -1.0f );
+
+            glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(0);
+            
+           
+            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+        }
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
 	}
 
 	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(2, VBO);
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -147,19 +171,26 @@ int main(void)
 void init(GLFWwindow* window) 
 {
     Mesh mesh = app.getScene(0).getMesh(0);
+    Mesh test = app.getScene(0).getMesh(1);
     
 	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &EBO);
-	glGenBuffers(1, &VBO);
+    glBindVertexArray(VAO);
 
-	glBindVertexArray(VAO);
+	glGenBuffers(2, EBO);
+	glGenBuffers(2, VBO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, (mesh.vertices.size()*3) * sizeof(float), mesh.vertices.data(), GL_DYNAMIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.faces[0].verticesID.size()*sizeof(unsigned int), 
 													mesh.faces[0].verticesID.data(), GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+	glBufferData(GL_ARRAY_BUFFER, (test.vertices.size()*3) * sizeof(float), test.vertices.data(), GL_DYNAMIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, test.faces[0].verticesID.size()*sizeof(unsigned int), 
+													test.faces[0].verticesID.data(), GL_DYNAMIC_DRAW);
 	
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -172,11 +203,14 @@ void init(GLFWwindow* window)
 
 void display(GLFWwindow* window, double currentTime) 
 {
+
 	glClearColor(0.08f, 0.08f, 0.06f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	mygl_GradientBackground( 0.2, 0.2, 0.2, 1.0,
                              0.1, 0.1, 0.1, 1.0 );
+
+   
 
 	glfwGetFramebufferSize(window, &appWidth, &appHeight);
 }
@@ -221,7 +255,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
     //Hit detection class
     RayHit rayHit(xpos, ypos, appWidth, appHeight, matrixs.view, matrixs.projection, matrixs.model, orbitCamera, app);
-    glm::vec3 result = rayHit.rayPlaneHitPoint();
+    T = rayHit.rayPlaneHitPoint();
+    //std::cout << "result: " << T << std::endl;
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called

@@ -21,7 +21,7 @@ public:
            {
                t = 0.0f;
            }
-    glm::vec3 rayPlaneHitPoint();
+    float rayPlaneHitPoint();
 
 private:
     float pointOnTriangle(glm::vec3& point, glm::vec3& n); 
@@ -35,7 +35,7 @@ private:
     float t;
 };
 
-inline glm::vec3 RayHit::rayPlaneHitPoint()
+inline float RayHit::rayPlaneHitPoint()
 {
     Mesh mesh = app.getScene(0).getMesh(0);
 
@@ -65,7 +65,7 @@ inline glm::vec3 RayHit::rayPlaneHitPoint()
     float dot = glm::dot(n, ray_wor);
 
     if (dot < 0.001)
-        return glm::vec3(-1,-1,-1); // Face not facing to ray 
+        return -1; // Face not facing to ray 
 
     glm::vec3 diff = p0 - orbitCamera.position();
 
@@ -73,9 +73,9 @@ inline glm::vec3 RayHit::rayPlaneHitPoint()
 
     glm::vec3 point = orbitCamera.position() + (ray_wor * t);
 
-    pointOnTriangle(point, n);
+    float tt = pointOnTriangle(point, n);
 
-    return point;
+    return tt;
 }
 
 inline float RayHit::pointOnTriangle(glm::vec3& point, glm::vec3& n)
@@ -90,8 +90,6 @@ inline float RayHit::pointOnTriangle(glm::vec3& point, glm::vec3& n)
     const float kNoIntersection =  FLT_MAX;
 
     glm::vec3 p = point;
-
-    std::cout << "p x: " << p.x << " y: " << p.y << " z: " << p.z << std::endl;
 
     float u0, u1, u2;
     float v0, v1, v2;
@@ -151,29 +149,23 @@ inline float RayHit::pointOnTriangle(glm::vec3& point, glm::vec3& n)
     
     temp = 1.0f / temp;
     float alpha = (u0 * v2 - v0 * u2) * temp;
-    std::cout << "alpha: " << alpha << std::endl;
     if (! (alpha >= 0.0f)) {
-        std::cout << "alpha" << std::endl;
         return kNoIntersection;
     }
     
     float beta = (u1 * v0 - v1 * u0) * temp;
 
     if (! (beta >= 0.0f)) {
-        std::cout << "beta" << std::endl;
         return kNoIntersection;
     }
 
     float gamma = 1.0f - alpha - beta;
 
     if (!(gamma >= 0.0f)) {
-        std::cout << "gamma" << std::endl;
         return kNoIntersection;
     }  
-
-    std::cout << "t: " << t << std::endl;
     
-    return 0;
+    return t;
 }
 
 #endif
