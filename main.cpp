@@ -29,7 +29,7 @@ struct Matrixs
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-//void processInput(GLFWwindow *window);
+void processInput(GLFWwindow *window);
 void mygl_GradientBackground( float top_r, float top_g, float top_b, float top_a,
                               float bot_r, float bot_g, float bot_b, float bot_a);
 
@@ -42,7 +42,8 @@ double xPos, yPos;
 int lastX, lastY;
 
 bool firstMouse = true;
-bool LMB_free = true;
+bool MOUSE_free = true;
+bool KEY_free = true;
 int dragCounter = 0;
 glm::vec3 mouseWorldPos;
 
@@ -102,7 +103,7 @@ int main(void)
 
     while (!glfwWindowShouldClose(window)) {
 
-		//processInput(window);
+		processInput(window);
 
         // Matrixs
         glm::mat4 view1; 
@@ -276,7 +277,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     xPos = xpos;
     yPos = ypos;
     
-    if (LMB_free == false)
+    if (MOUSE_free == false)
         dragCounter++;
 
     // Hit detection class
@@ -318,7 +319,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
         glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
         glBufferSubData(GL_ARRAY_BUFFER, 0, 18*sizeof(float), mesh.vertices.data());
 
-        std::cout << "faceID: " << indexOddEven << std::endl;
+        //std::cout << "faceID: " << indexOddEven << std::endl;
 
         
     }
@@ -333,12 +334,35 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 void processInput(GLFWwindow *window)
 {
+    string newToolName;
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS && KEY_free == true) {
+        newToolName = "EXTRUDE";
+        app.newActiveTool(newToolName);
+        KEY_free = false;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && KEY_free == true) {
+        newToolName = "LOOPCUT";
+        app.newActiveTool(newToolName);
+        KEY_free = false;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && KEY_free == true) {
+        if (app.activeTool)
+            app.activeTool->LMB_Down();
+        KEY_free = false;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE ||
+        glfwGetKey(window, GLFW_KEY_L) == GLFW_RELEASE)
+        KEY_free = true;
     
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE && LMB_free == false) {
-			LMB_free = true;
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE && MOUSE_free == false) {
+			MOUSE_free = true;
             dragCounter = 0;
 			std::cout << "Mouse Button 1 released" << std::endl; 
 	}
