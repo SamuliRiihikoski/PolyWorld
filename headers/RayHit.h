@@ -21,10 +21,11 @@ public:
            {
                t = 0.0f;
            }
-    float rayPlaneHitPoint();
+    pair<float, unsigned int> rayPlaneHitPoint();
 
 private:
-    float pointOnTriangle(glm::vec3& point, glm::vec3& n); 
+    float pointOnTriangle(glm::vec3& point, glm::vec3& n, 
+                          glm::vec3& p1, glm::vec3& p2, glm::vec3& p3); 
     
 
     double& xpos, ypos;
@@ -35,57 +36,71 @@ private:
     float t;
 };
 
-inline float RayHit::rayPlaneHitPoint()
+inline pair<float, unsigned int> RayHit::rayPlaneHitPoint()
 {
     Mesh mesh = app.getScene(0).getMesh(0);
+    float t_final = FLT_MAX;
+    unsigned int faceID = -1;
+    pair<float, unsigned> results;
 
-    glm::vec3 p0 = glm::vec3(mesh.vertices[0].pos[0], mesh.vertices[0].pos[1], mesh.vertices[0].pos[2]);
-    glm::vec3 p1 = glm::vec3(mesh.vertices[1].pos[0], mesh.vertices[1].pos[1], mesh.vertices[1].pos[2]);
-    glm::vec3 p2 = glm::vec3(mesh.vertices[2].pos[0], mesh.vertices[2].pos[1], mesh.vertices[2].pos[2]);
+    for (int i = 0; i < mesh.faces[0].verticesID.size(); i+=3)
+    {   
+        int i0 = mesh.faces[0].verticesID[i];
+        int i1 = mesh.faces[0].verticesID[i+1];
+        int i2 = mesh.faces[0].verticesID[i+2];
 
-    // NDC
-	float x = 2 * (xpos / appWidth) - 1.0f;
-	float y = 1.0f - 2.0f * (ypos / appHeight);
-	float z = -1.0f;
-	glm::vec3 ray_nds = glm::vec3(x, y, z);
-	glm::vec4 ray_clip = glm::vec4(x, y, -1.0f, 1.0f);
+        glm::vec3 p0 = glm::vec3(mesh.vertices[i0].pos[0], mesh.vertices[i0].pos[1], mesh.vertices[i0].pos[2]);
+        glm::vec3 p1 = glm::vec3(mesh.vertices[i1].pos[0], mesh.vertices[i1].pos[1], mesh.vertices[i1].pos[2]);
+        glm::vec3 p2 = glm::vec3(mesh.vertices[i2].pos[0], mesh.vertices[i2].pos[1], mesh.vertices[i2].pos[2]);
 
-	// Camera (EYE) Coordinates
-	glm::vec4 ray_eye = glm::inverse(projection) * ray_clip;
-    ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0f, 0.0f);
-	
-	// World coordinate
-	glm::vec3 ray_wor = (glm::inverse(view) * ray_eye);
-    ray_wor = glm::normalize(ray_wor);
+        // NDC
+        float x = 2 * (xpos / appWidth) - 1.0f;
+        float y = 1.0f - 2.0f * (ypos / appHeight);
+        float z = -1.0f;
+        glm::vec3 ray_nds = glm::vec3(x, y, z);
+        glm::vec4 ray_clip = glm::vec4(x, y, -1.0f, 1.0f);
 
-    glm::vec3 n1 = p2 - p0;
-    glm::vec3 n2 = p0 - p1;
-	glm::vec3 n = glm::cross(n2, n1);
+        // Camera (EYE) Coordinates
+        glm::vec4 ray_eye = glm::inverse(projection) * ray_clip;
+        ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0f, 0.0f);
+        
+        // World coordinate
+        glm::vec3 ray_wor = (glm::inverse(view) * ray_eye);
+        ray_wor = glm::normalize(ray_wor);
 
-    float dot = glm::dot(n, ray_wor);
+        glm::vec3 n1 = p2 - p0;
+        glm::vec3 n2 = p0 - p1;
+        glm::vec3 n = glm::cross(n2, n1);
 
-    if (dot < 0.001)
-        return -1; // Face not facing to ray 
+        float dot = glm::dot(n, ray_wor);
 
-    glm::vec3 diff = p0 - orbitCamera.position();
+        if (dot < 0.001)
+            continue; // polgyon facing away from ray
 
-    float t = glm::dot(diff, n) /dot;
+        glm::vec3 diff = p0 - orbitCamera.position();
 
-    glm::vec3 point = orbitCamera.position() + (ray_wor * t);
+        float t = glm::dot(diff, n) /dot;
 
-    float tt = pointOnTriangle(point, n);
+        glm::vec3 point = orbitCamera.position() + (ray_wor * t);
 
-    return tt;
+        float tt = pointOnTriangle(point, n, p0, p1, p2);
+
+        //std::cout << "final: " << tt << std::endl;
+
+
+        if (tt == 0) {
+            t_final = 0;
+            faceID = i;
+        }
+    }
+    results.first = t_final;
+    results.second = faceID;
+    return results;
 }
 
-inline float RayHit::pointOnTriangle(glm::vec3& point, glm::vec3& n)
+inline float RayHit::pointOnTriangle(glm::vec3& point, glm::vec3& n, glm::vec3& p0, glm::vec3& p1, glm::vec3& p2)
 {
     Mesh mesh = app.getScene(0).getMesh(0);
-
-    glm::vec3 p0 = glm::vec3(mesh.vertices[0].pos[0], mesh.vertices[0].pos[1], mesh.vertices[0].pos[2]);
-    glm::vec3 p1 = glm::vec3(mesh.vertices[1].pos[0], mesh.vertices[1].pos[1], mesh.vertices[1].pos[2]);
-    glm::vec3 p2 = glm::vec3(mesh.vertices[2].pos[0], mesh.vertices[2].pos[1], mesh.vertices[2].pos[2]);
-
 
     const float kNoIntersection =  FLT_MAX;
 

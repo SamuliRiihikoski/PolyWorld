@@ -5,6 +5,6 @@ Done
 - Polygon selection (Colors the active polygon)
 
 Backlog
-- Proper data structure for mesh data (ACTIVE)
+- Proper mesh data structure (halfedge-based) (ACTIVE)
 - Add Cube for starting point for scene.
 - Extrude Polygon

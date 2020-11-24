@@ -10,5 +10,5 @@ void main()
     if(gl_FrontFacing)
         color = acolor;
     else
-        color = vec4(1.0, 0.0, 0.0, 1.0);
+        color = vec4(0.0, 0.0, 0.0, 1.0);
 } 

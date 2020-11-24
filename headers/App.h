@@ -12,11 +12,13 @@ private:
 public:
     void newScene();
     Scene getScene(int index);
+    unsigned int activePolyID;
 };
 
 inline void App::newScene()
 {
     scenes.push_back(Scene("Scene"));
+    activePolyID = -1;
 }
 
 inline Scene App::getScene(int index)

@@ -46,7 +46,7 @@ bool LMB_free = true;
 int dragCounter = 0;
 glm::vec3 mouseWorldPos;
 
-unsigned int VAO, VBO[2], EBO[2];
+unsigned int VAO, VBO[3], EBO[3];
 
 // create scene
 Scene scene("scene1");
@@ -134,34 +134,45 @@ int main(void)
         glEnable( GL_DEPTH_TEST );
         glEnable( GL_POLYGON_OFFSET_FILL );
         glPolygonOffset( 1.0f, 1.0f );
-  
+        
+        // MESH DRAW
         glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);       
 
+        // ACTIVE ELEMENT DRAW
         if (T != FLT_MAX && T != -1) // -1 facing angle > 90 degrees 
         {
             shaderProgram.setUniform("acolor", glm::vec4(0.7f, 0.4f, 0.4f, 1.0f));
           
-            glEnable( GL_DEPTH_TEST );
-            glEnable( GL_POLYGON_OFFSET_FILL );
-            glPolygonOffset( -1.0f, -1.0f );
+            glPolygonOffset( -0.1f, -0.1f );
 
             glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-            glEnableVertexAttribArray(0);
-            
-           
-            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+
+            glDrawArrays(GL_TRIANGLES, 0, 6);
         }
+        
+        // EDGE DRAW
+        glPolygonOffset( -1.0f, -1.0f );
+        glLineWidth(3.0f);
+        glEnable(GL_LINE_SMOOTH);
+        shaderProgram.setUniform("acolor", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        
+        glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glDrawArrays(GL_LINES, 0, 48);
+        
+        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
 	}
 
 	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(2, VBO);
+	glDeleteBuffers(3, VBO);
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -171,13 +182,24 @@ int main(void)
 void init(GLFWwindow* window) 
 {
     Mesh mesh = app.getScene(0).getMesh(0);
-    Mesh test = app.getScene(0).getMesh(1);
+    
+    Mesh temp("temp");
+    
+    for (int i = 0; i < mesh.faces[0].verticesID.size(); i+=3)
+    {
+        
+        temp.vertices.push_back(mesh.vertices[mesh.faces[0].verticesID[i]]);
+        temp.vertices.push_back(mesh.vertices[mesh.faces[0].verticesID[i+1]]);
+        temp.vertices.push_back(mesh.vertices[mesh.faces[0].verticesID[i+1]]);
+        temp.vertices.push_back(mesh.vertices[mesh.faces[0].verticesID[i+2]]);
+
+    }
     
 	glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-	glGenBuffers(2, EBO);
-	glGenBuffers(2, VBO);
+	glGenBuffers(3, EBO);
+	glGenBuffers(3, VBO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, (mesh.vertices.size()*3) * sizeof(float), mesh.vertices.data(), GL_DYNAMIC_DRAW);
@@ -185,17 +207,21 @@ void init(GLFWwindow* window)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.faces[0].verticesID.size()*sizeof(unsigned int), 
 													mesh.faces[0].verticesID.data(), GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	glBufferData(GL_ARRAY_BUFFER, (test.vertices.size()*3) * sizeof(float), test.vertices.data(), GL_DYNAMIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, test.faces[0].verticesID.size()*sizeof(unsigned int), 
-													test.faces[0].verticesID.data(), GL_DYNAMIC_DRAW);
-	
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+    glBufferData(GL_ARRAY_BUFFER,  18 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
+    glBufferData(GL_ARRAY_BUFFER, (temp.vertices.size()*3) * sizeof(float), temp.vertices.data(), GL_DYNAMIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 
 	glBindVertexArray(0);
 
@@ -207,8 +233,8 @@ void display(GLFWwindow* window, double currentTime)
 	glClearColor(0.08f, 0.08f, 0.06f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	mygl_GradientBackground( 0.2, 0.2, 0.2, 1.0,
-                             0.1, 0.1, 0.1, 1.0 );
+	mygl_GradientBackground( 0.3, 0.3, 0.3, 1.0,
+                             0.15, 0.15, 0.15, 1.0 );
 
    
 
@@ -253,10 +279,49 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     if (LMB_free == false)
         dragCounter++;
 
-    //Hit detection class
+    // Hit detection class
     RayHit rayHit(xpos, ypos, appWidth, appHeight, matrixs.view, matrixs.projection, matrixs.model, orbitCamera, app);
-    T = rayHit.rayPlaneHitPoint();
-    //std::cout << "result: " << T << std::endl;
+    pair<float, unsigned int> results(FLT_MAX, -1); 
+    results = rayHit.rayPlaneHitPoint();
+    T = results.first;
+
+    // Update active polygon
+    if (results.second != app.activePolyID && results.first == 0) {
+        app.activePolyID = results.second;
+
+        Mesh mesh("temp");
+
+        int i1 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID];
+        int i2 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID+1];
+        int i3 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID+2];
+
+        mesh.vertices.push_back(app.getScene(0).getMesh(0).vertices[i1]);
+        mesh.vertices.push_back(app.getScene(0).getMesh(0).vertices[i2]);
+        mesh.vertices.push_back(app.getScene(0).getMesh(0).vertices[i3]);
+
+        int indexOddEven = ((app.activePolyID / 3) % 2);
+
+        if (indexOddEven == 0) {
+            i1 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID+3];
+            i2 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID+4];
+            i3 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID+5];
+        } else {
+            i1 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID-3];
+            i2 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID-2];
+            i3 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID-1];
+        }
+
+        mesh.vertices.push_back(app.getScene(0).getMesh(0).vertices[i1]);
+        mesh.vertices.push_back(app.getScene(0).getMesh(0).vertices[i2]);
+        mesh.vertices.push_back(app.getScene(0).getMesh(0).vertices[i3]);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, 18*sizeof(float), mesh.vertices.data());
+
+        std::cout << "faceID: " << indexOddEven << std::endl;
+
+        
+    }
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
