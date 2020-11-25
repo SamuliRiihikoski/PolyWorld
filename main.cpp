@@ -137,11 +137,13 @@ int main(void)
         glPolygonOffset( 1.0f, 1.0f );
         
         // MESH DRAW
+        
         glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);       
+        glDrawArrays(GL_TRIANGLES, 0, app.getScene(0).getMesh(0).FaceList.size() * 6);       
 
+        
         // ACTIVE ELEMENT DRAW
         if (T != FLT_MAX && T != -1) // -1 facing angle > 90 degrees 
         {
@@ -182,6 +184,9 @@ int main(void)
 
 void init(GLFWwindow* window) 
 {
+   
+
+
     Mesh mesh = app.getScene(0).getMesh(0);
     
     Mesh temp("temp");
@@ -195,6 +200,8 @@ void init(GLFWwindow* window)
         temp.vertices.push_back(mesh.vertices[mesh.faces[0].verticesID[i+2]]);
 
     }
+
+     
     
 	glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -202,27 +209,43 @@ void init(GLFWwindow* window)
 	glGenBuffers(3, EBO);
 	glGenBuffers(3, VBO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-	glBufferData(GL_ARRAY_BUFFER, (mesh.vertices.size()*3) * sizeof(float), mesh.vertices.data(), GL_DYNAMIC_DRAW);
+    
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.faces[0].verticesID.size()*sizeof(unsigned int), 
-													mesh.faces[0].verticesID.data(), GL_DYNAMIC_DRAW);
+    vector<Vertex> vboMesh;
+    
+    for (int i = 0; i < mesh.FaceList.size(); i++)
+    {
+        HEdge* first = mesh.FaceList[i].edge;
+
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        first = first->next;
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        first = first->next;
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        first = first->next;
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        first = first->next;
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+    }
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, (vboMesh.size()*3) * sizeof(float), vboMesh.data(), GL_DYNAMIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-
+    
     glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
     glBufferData(GL_ARRAY_BUFFER,  18 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-
+    
     glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
     glBufferData(GL_ARRAY_BUFFER, (temp.vertices.size()*3) * sizeof(float), temp.vertices.data(), GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+    
 
 	glBindVertexArray(0);
 

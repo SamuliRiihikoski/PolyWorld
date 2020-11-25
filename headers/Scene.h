@@ -104,14 +104,7 @@ inline void Scene::initScene()
 
     meshes[0].faces[0].verticesID.push_back(6);
     meshes[0].faces[0].verticesID.push_back(7);
-    meshes[0].faces[0].verticesID.push_back(3);
-
-
-
-
-    
-    
-    
+    meshes[0].faces[0].verticesID.push_back(3);    
 
     meshes.push_back(Mesh("Test"));
 
