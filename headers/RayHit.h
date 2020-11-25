@@ -27,7 +27,6 @@ private:
     float pointOnTriangle(glm::vec3& point, glm::vec3& n, 
                           glm::vec3& p1, glm::vec3& p2, glm::vec3& p3); 
     
-
     double& xpos, ypos;
     int& appWidth, appHeight;
     glm::mat4& view, projection, model;
@@ -42,16 +41,19 @@ inline pair<float, unsigned int> RayHit::rayPlaneHitPoint()
     float t_final = FLT_MAX;
     unsigned int faceID = -1;
     pair<float, unsigned> results;
+    float tt = FLT_MAX;
 
-    for (int i = 0; i < mesh.faces[0].verticesID.size(); i+=3)
+    for (int i = 0; i < mesh.FaceList.size(); i++)
     {   
-        int i0 = mesh.faces[0].verticesID[i];
-        int i1 = mesh.faces[0].verticesID[i+1];
-        int i2 = mesh.faces[0].verticesID[i+2];
+        Vert* i0 = mesh.FaceList[i].edge->vertex;
+        Vert* i1 = mesh.FaceList[i].edge->next->vertex;
+        Vert* i2 = mesh.FaceList[i].edge->next->next->vertex;
+        Vert* i3 = mesh.FaceList[i].edge->next->next->next->vertex;
 
-        glm::vec3 p0 = glm::vec3(mesh.vertices[i0].pos[0], mesh.vertices[i0].pos[1], mesh.vertices[i0].pos[2]);
-        glm::vec3 p1 = glm::vec3(mesh.vertices[i1].pos[0], mesh.vertices[i1].pos[1], mesh.vertices[i1].pos[2]);
-        glm::vec3 p2 = glm::vec3(mesh.vertices[i2].pos[0], mesh.vertices[i2].pos[1], mesh.vertices[i2].pos[2]);
+        glm::vec3 p0 = glm::vec3(i0->position[0] , i0->position[1], i0->position[2]);
+        glm::vec3 p1 = glm::vec3(i1->position[0] , i1->position[1], i1->position[2]);
+        glm::vec3 p2 = glm::vec3(i2->position[0] , i2->position[1], i2->position[2]);
+        glm::vec3 p3 = glm::vec3(i3->position[0] , i3->position[1], i3->position[2]);
 
         // NDC
         float x = 2 * (xpos / appWidth) - 1.0f;
@@ -68,8 +70,10 @@ inline pair<float, unsigned int> RayHit::rayPlaneHitPoint()
         glm::vec3 ray_wor = (glm::inverse(view) * ray_eye);
         ray_wor = glm::normalize(ray_wor);
 
-        glm::vec3 n1 = p2 - p0;
-        glm::vec3 n2 = p0 - p1;
+        // FIRST TRIANGLE IN FACE
+
+        glm::vec3 n1 = p1 - p0;
+        glm::vec3 n2 = p2 - p0;
         glm::vec3 n = glm::cross(n2, n1);
 
         float dot = glm::dot(n, ray_wor);
@@ -83,16 +87,31 @@ inline pair<float, unsigned int> RayHit::rayPlaneHitPoint()
 
         glm::vec3 point = orbitCamera.position() + (ray_wor * t);
 
-        float tt = pointOnTriangle(point, n, p0, p1, p2);
+        tt = pointOnTriangle(point, n, p0, p1, p2);
 
-        //std::cout << "final: " << tt << std::endl;
+        // SECOND TRIANGLE IN FACE
 
+        if (tt != 0)
+        {
+            n1 = p3 - p2;
+            n2 = p0 - p2;
+            float dot = glm::dot(n, ray_wor);
+            glm::vec3 diff = p0 - orbitCamera.position();
+
+            float t = glm::dot(diff, n) /dot;
+
+            glm::vec3 point = orbitCamera.position() + (ray_wor * t);
+
+            tt = pointOnTriangle(point, n, p0, p3, p2);
+        }
 
         if (tt == 0) {
             t_final = 0;
             faceID = i;
+            break;
         }
     }
+    //std::cout << "ID: " << faceID << std::endl;
     results.first = t_final;
     results.second = faceID;
     return results;

@@ -24,8 +24,6 @@ struct Matrixs
     glm::mat4 projection;
 };
 
-
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -63,7 +61,7 @@ Matrixs matrixs;
 
 //Main Application Class
 App app;
-float T;
+unsigned int T;
 
 int main(void) 
 {
@@ -185,47 +183,50 @@ int main(void)
 void init(GLFWwindow* window) 
 {
    
-
-
     Mesh mesh = app.getScene(0).getMesh(0);
-    
-    Mesh temp("temp");
-    
-    for (int i = 0; i < mesh.faces[0].verticesID.size(); i+=3)
-    {
-        
-        temp.vertices.push_back(mesh.vertices[mesh.faces[0].verticesID[i]]);
-        temp.vertices.push_back(mesh.vertices[mesh.faces[0].verticesID[i+1]]);
-        temp.vertices.push_back(mesh.vertices[mesh.faces[0].verticesID[i+1]]);
-        temp.vertices.push_back(mesh.vertices[mesh.faces[0].verticesID[i+2]]);
 
-    }
-
-     
-    
 	glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
 	glGenBuffers(3, EBO);
 	glGenBuffers(3, VBO);
 
-    
-
     vector<Vertex> vboMesh;
+    vector<Vertex> vboEdge;
     
     for (int i = 0; i < mesh.FaceList.size(); i++)
     {
         HEdge* first = mesh.FaceList[i].edge;
+        
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+
+        first = first->next;
+
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
 
         vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
         first = first->next;
+
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+
         vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        
         first = first->next;
+
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+
         vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        
         first = first->next;
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        first = first->next;
+
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+
+        
         vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
     }
 
@@ -242,8 +243,8 @@ void init(GLFWwindow* window)
 	glEnableVertexAttribArray(0);
     
     glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
-    glBufferData(GL_ARRAY_BUFFER, (temp.vertices.size()*3) * sizeof(float), temp.vertices.data(), GL_DYNAMIC_DRAW);
-
+    glBufferData(GL_ARRAY_BUFFER, (vboEdge.size()*3) * sizeof(float), vboEdge.data(), GL_DYNAMIC_DRAW);
+    
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     
 
@@ -307,40 +308,28 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     RayHit rayHit(xpos, ypos, appWidth, appHeight, matrixs.view, matrixs.projection, matrixs.model, orbitCamera, app);
     pair<float, unsigned int> results(FLT_MAX, -1); 
     results = rayHit.rayPlaneHitPoint();
-    T = results.first;
+    T = results.second;
 
-    // Update active polygon
+    // Update active mouse hover polygon
     if (results.second != app.activePolyID && results.first == 0) {
         app.activePolyID = results.second;
+        vector<Vertex> mesh;
 
-        Mesh mesh("temp");
-
-        int i1 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID];
-        int i2 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID+1];
-        int i3 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID+2];
-
-        mesh.vertices.push_back(app.getScene(0).getMesh(0).vertices[i1]);
-        mesh.vertices.push_back(app.getScene(0).getMesh(0).vertices[i2]);
-        mesh.vertices.push_back(app.getScene(0).getMesh(0).vertices[i3]);
-
-        int indexOddEven = ((app.activePolyID / 3) % 2);
-
-        if (indexOddEven == 0) {
-            i1 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID+3];
-            i2 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID+4];
-            i3 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID+5];
-        } else {
-            i1 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID-3];
-            i2 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID-2];
-            i3 = app.getScene(0).getMesh(0).faces[0].verticesID[app.activePolyID-1];
-        }
-
-        mesh.vertices.push_back(app.getScene(0).getMesh(0).vertices[i1]);
-        mesh.vertices.push_back(app.getScene(0).getMesh(0).vertices[i2]);
-        mesh.vertices.push_back(app.getScene(0).getMesh(0).vertices[i3]);
+        HEdge* first = app.getScene(0).getMesh(0).FaceList[results.second].edge;
+        
+        mesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        first = first->next;
+        mesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        first = first->next;
+        mesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        mesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        first = first->next;
+        mesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        first = first->next;
+        mesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, 18*sizeof(float), mesh.vertices.data());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, 18*sizeof(float), mesh.data());
 
         //std::cout << "faceID: " << indexOddEven << std::endl;
 

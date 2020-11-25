@@ -51,8 +51,6 @@ public:
 
     int ID;
     std::string name;
-    std::vector<Vertex> vertices;
-    std::vector<Polygon> faces;
 
     std::vector<Vert> VertexList;
     std::vector<Face> FaceList;
