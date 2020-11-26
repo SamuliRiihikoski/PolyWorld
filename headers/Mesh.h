@@ -18,6 +18,13 @@ struct Vert {
         position[2] = z;
         edge = nullptr;
     };
+    Vert() {
+        position[0] = 0;
+        position[1] = 0;
+        position[2] = 0;
+        edge = nullptr;
+    }
+
 };
 
 struct HEdge {
@@ -51,7 +58,6 @@ public:
 
     int ID;
     std::string name;
-
     std::vector<Vert> VertexList;
     std::vector<Face> FaceList;
     std::vector<HEdge> HEdgeList;

@@ -12,6 +12,7 @@ struct Vertex {
         pos[1] = y;
         pos[2] = z;
     }
+    Vertex();
 };
 
 struct Polygon {

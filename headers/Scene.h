@@ -31,6 +31,7 @@ public:
     void removeScene();
     void updateScene();
     Mesh getMesh(int index);
+    Mesh* getMeshPointer(int index);
 
 };
 
@@ -63,6 +64,11 @@ inline void Scene::updateScene()
 inline Mesh Scene::getMesh(int index)
 {
     return meshes[index];
+}
+
+inline Mesh* Scene::getMeshPointer(int index)
+{
+    return &meshes[index];
 }
 
 #endif

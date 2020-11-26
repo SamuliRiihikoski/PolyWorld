@@ -17,6 +17,7 @@ public:
     void newScene();
     Scene getScene(int index);
     unsigned int activePolyID;
+    unsigned int firstClickPolyID;
     Tool* activeTool;
     void newActiveTool(string newToolName);
 };

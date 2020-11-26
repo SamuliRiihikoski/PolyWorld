@@ -25,6 +25,7 @@ struct Matrixs
 };
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mousebutton_callback(GLFWwindow* window, int button, int action, int mods);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -89,6 +90,7 @@ int main(void)
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
     glfwSetKeyCallback(window, key_callback);
+    glfwSetMouseButtonCallback(window, mousebutton_callback);
 	
 	if (glewInit() != GLEW_OK)
 		return 0;
@@ -144,7 +146,7 @@ int main(void)
             app.activeTool->Render();       
 
         // ACTIVE ELEMENT DRAW
-        if (hoverPolyID != FLT_MAX && hoverPolyID != -1 && dragCounter == 0) // -1 facing angle > 90 degrees 
+        if (app.firstClickPolyID != -1 && hoverPolyID != -1 && dragCounter == 0) // -1 facing angle > 90 degrees 
         {
             shaderProgram.setUniform("acolor", glm::vec4(0.7f, 0.4f, 0.4f, 1.0f));
           
@@ -277,6 +279,29 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 }
 
+void mousebutton_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS)
+    {   
+        app.firstClickPolyID = hoverPolyID;
+    }
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE)
+    {
+        app.firstClickPolyID = 0;
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        mouse_callback(window, xpos, ypos);
+    }
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
+    {
+        if(app.activeTool)
+            app.activeTool->RMB_Press();
+    }
+
+}
+
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -286,7 +311,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS)
     {   
 
-        if (hoverPolyID == -1 || dragCounter != 0) {// -1 = Backround 
+        if (app.firstClickPolyID == -1) {// -1 = Backround 
+            std::cout << "ID: " << hoverPolyID << std::endl;
             gYaw -= ((float)xpos - lastMousePos.x) * MOUSE_SENSITIVITY;
             gPitch += ((float)ypos - lastMousePos.y) * MOUSE_SENSITIVITY;
         }
@@ -305,14 +331,13 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
     xPos = xpos;
     yPos = ypos;
-    
-    if (MOUSE_free == false)
-        dragCounter++;
 
     // Hit detection class
     RayHit rayHit(xpos, ypos, appWidth, appHeight, matrixs.view, matrixs.projection, matrixs.model, orbitCamera, app);
-    pair<float, unsigned int> results(FLT_MAX, -1); 
+    pair<float, unsigned int> results(FLT_MAX, -1);
+    
     results = rayHit.rayPlaneHitPoint();
+    
     hoverPolyID = results.second;
 
     // Update active mouse hover polygon
@@ -341,7 +366,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     if(app.activeTool)
         app.activeTool->onMouseMove(xpos, ypos);
 
-
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -359,8 +383,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
 
-        if(hoverPolyID != -1)
-            app.activeTool->Execute(xpos, ypos);
+        if(hoverPolyID != -1) {
+            app.activeTool->Execute(xpos, ypos, hoverPolyID, app.getScene(0).getMeshPointer(0));
+        }
         
     }
 }
