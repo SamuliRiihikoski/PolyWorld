@@ -27,7 +27,7 @@ struct Matrixs
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mygl_GradientBackground( float top_r, float top_g, float top_b, float top_a,
                               float bot_r, float bot_g, float bot_b, float bot_a);
 
@@ -61,7 +61,7 @@ Matrixs matrixs;
 
 //Main Application Class
 App app;
-unsigned int T;
+unsigned int hoverPolyID;
 
 int main(void) 
 {
@@ -88,6 +88,7 @@ int main(void)
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
+    glfwSetKeyCallback(window, key_callback);
 	
 	if (glewInit() != GLEW_OK)
 		return 0;
@@ -100,8 +101,6 @@ int main(void)
     init(window);
 
     while (!glfwWindowShouldClose(window)) {
-
-		processInput(window);
 
         // Matrixs
         glm::mat4 view1; 
@@ -139,11 +138,13 @@ int main(void)
         glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-        glDrawArrays(GL_TRIANGLES, 0, app.getScene(0).getMesh(0).FaceList.size() * 6);       
+        glDrawArrays(GL_TRIANGLES, 0, app.getScene(0).getMesh(0).FaceList.size() * 6);
 
-        
+        if (app.activeTool)
+            app.activeTool->Render();       
+
         // ACTIVE ELEMENT DRAW
-        if (T != FLT_MAX && T != -1) // -1 facing angle > 90 degrees 
+        if (hoverPolyID != FLT_MAX && hoverPolyID != -1 && dragCounter == 0) // -1 facing angle > 90 degrees 
         {
             shaderProgram.setUniform("acolor", glm::vec4(0.7f, 0.4f, 0.4f, 1.0f));
           
@@ -284,8 +285,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS)
     {   
-        gYaw -= ((float)xpos - lastMousePos.x) * MOUSE_SENSITIVITY;
-        gPitch += ((float)ypos - lastMousePos.y) * MOUSE_SENSITIVITY;
+
+        if (hoverPolyID == -1 || dragCounter != 0) {// -1 = Backround 
+            gYaw -= ((float)xpos - lastMousePos.x) * MOUSE_SENSITIVITY;
+            gPitch += ((float)ypos - lastMousePos.y) * MOUSE_SENSITIVITY;
+        }
+        
     }
 
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
@@ -308,10 +313,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     RayHit rayHit(xpos, ypos, appWidth, appHeight, matrixs.view, matrixs.projection, matrixs.model, orbitCamera, app);
     pair<float, unsigned int> results(FLT_MAX, -1); 
     results = rayHit.rayPlaneHitPoint();
-    T = results.second;
+    hoverPolyID = results.second;
 
     // Update active mouse hover polygon
-    if (results.second != app.activePolyID && results.first == 0) {
+    if (results.second != app.activePolyID && results.first == 0) 
+    {
         app.activePolyID = results.second;
         vector<Vertex> mesh;
 
@@ -329,10 +335,32 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
         mesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, 18*sizeof(float), mesh.data());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, 18*sizeof(float), mesh.data());   
+    }
+    
+    if(app.activeTool)
+        app.activeTool->onMouseMove(xpos, ypos);
 
-        //std::cout << "faceID: " << indexOddEven << std::endl;
 
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    string newToolName;
+
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (key == GLFW_KEY_E && action == GLFW_PRESS) 
+    {
+        newToolName = "EXTRUDE";
+        app.newActiveTool(newToolName);
+
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+
+        if(hoverPolyID != -1)
+            app.activeTool->Execute(xpos, ypos);
         
     }
 }
@@ -342,42 +370,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     //camera.ProcessMouseScroll(yoffset);
-}
-
-void processInput(GLFWwindow *window)
-{
-    string newToolName;
-
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS && KEY_free == true) {
-        newToolName = "EXTRUDE";
-        app.newActiveTool(newToolName);
-        KEY_free = false;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && KEY_free == true) {
-        newToolName = "LOOPCUT";
-        app.newActiveTool(newToolName);
-        KEY_free = false;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && KEY_free == true) {
-        if (app.activeTool)
-            app.activeTool->LMB_Down();
-        KEY_free = false;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE ||
-        glfwGetKey(window, GLFW_KEY_L) == GLFW_RELEASE)
-        KEY_free = true;
-    
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE && MOUSE_free == false) {
-			MOUSE_free = true;
-            dragCounter = 0;
-			std::cout << "Mouse Button 1 released" << std::endl; 
-	}
 }
 
 void mygl_GradientBackground( float top_r, float top_g, float top_b, float top_a,
