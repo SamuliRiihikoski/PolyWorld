@@ -76,7 +76,7 @@ int main(void)
     if (!glfwInit())
 		return 0;
 	
-	GLFWwindow* window = glfwCreateWindow(appWidth, appHeight, "PolyWorld (version:0.01)", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(appWidth, appHeight, "PolyWorld (version:0.02)", NULL, NULL);
 	
 	if (window == NULL)
     {
@@ -136,18 +136,21 @@ int main(void)
         glPolygonOffset( 1.0f, 1.0f );
         
         // MESH DRAW
-        
+        /*
         glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
         glDrawArrays(GL_TRIANGLES, 0, app.getScene(0).getMesh(0).FaceList.size() * 6);
+       
+        */
 
         if (app.activeTool)
-            app.activeTool->Render();       
+            app.activeTool->Render();
 
         // ACTIVE ELEMENT DRAW
         if (app.firstClickPolyID != -1 && hoverPolyID != -1 && dragCounter == 0) // -1 facing angle > 90 degrees 
         {
+            
             shaderProgram.setUniform("acolor", glm::vec4(0.7f, 0.4f, 0.4f, 1.0f));
           
             glPolygonOffset( -0.1f, -0.1f );
@@ -168,9 +171,7 @@ int main(void)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
         glDrawArrays(GL_LINES, 0, 48);
-        
-        
-
+    
         glfwSwapBuffers(window);
         glfwPollEvents();
 	}
@@ -201,37 +202,50 @@ void init(GLFWwindow* window)
     {
         HEdge* first = mesh.FaceList[i].edge;
         
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-
-        first = first->next;
-
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-
         vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
         first = first->next;
-
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        first = first->next;
 
         vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
         vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
         
         first = first->next;
 
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-
         vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
         
         first = first->next;
-
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-
         
         vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
     }
+
+    for (int i = 0; i < mesh.FaceList.size(); i++)
+    {
+        HEdge* first = mesh.FaceList[i].edge;
+        
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+       
+        first = first->next;
+
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+
+        first = first->next;
+
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+ 
+        first = first->next;
+
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+
+        
+        first = first->next;
+
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+
+        }
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, (vboMesh.size()*3) * sizeof(float), vboMesh.data(), GL_DYNAMIC_DRAW);
@@ -312,7 +326,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     {   
 
         if (app.firstClickPolyID == -1) {// -1 = Backround 
-            std::cout << "ID: " << hoverPolyID << std::endl;
             gYaw -= ((float)xpos - lastMousePos.x) * MOUSE_SENSITIVITY;
             gPitch += ((float)ypos - lastMousePos.y) * MOUSE_SENSITIVITY;
         }

@@ -41,6 +41,13 @@ struct HEdge {
         prev = nullptr;
         opposite = nullptr;
     };
+    HEdge() {
+        this->vertex = nullptr;
+        face = nullptr;
+        next = nullptr;
+        prev = nullptr;
+        opposite = nullptr;
+    }
 };
 
 struct Face {
@@ -48,6 +55,9 @@ struct Face {
     Face(HEdge* edge) {
         this->edge = edge;
     };
+    Face() {
+        edge = nullptr;
+    }
 };
 
 class Mesh {
@@ -61,7 +71,7 @@ public:
     std::vector<Vert> VertexList;
     std::vector<Face> FaceList;
     std::vector<HEdge> HEdgeList;
-    
+    Mesh();
     Mesh(std::string name) : name(name) 
     {   
         
@@ -229,5 +239,10 @@ public:
         VertexList[7].edge = &HEdgeList[10]; // 7
     }
 };
+
+inline Mesh::Mesh() 
+{
+    
+}
 
 #endif

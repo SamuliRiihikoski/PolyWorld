@@ -9,7 +9,6 @@ class Tool_loopcut : public Tool
 public:
     void LMB_Press();
     void RMB_Press();
-    void Render();
     void Execute(double& xpos, double& ypos, unsigned int polyID);
     void onMouseMove(double& xpos, double& ypos);
 };
@@ -22,11 +21,6 @@ inline void Tool_loopcut::LMB_Press()
 inline void Tool_loopcut::RMB_Press()
 {
     std::cout << "RMB_Press: Loopcut" << std::endl;
-}
-
-inline void Tool_loopcut::Render()
-{
-    
 }
 
 inline void Tool_loopcut::Execute(double& xpos, double& ypos, unsigned int polyID)
