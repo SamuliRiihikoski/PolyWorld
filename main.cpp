@@ -129,6 +129,9 @@ int main(void)
         shaderProgram.setUniform("projection", matrixs.projection);
         shaderProgram.setUniform("acolor", glm::vec4(0.6f, 0.6f, 0.6f, 1.0f));
 
+        if(app.activeTool)
+            app.executeTool();
+
 		glBindVertexArray(VAO);
 
         glEnable( GL_DEPTH_TEST );
@@ -136,16 +139,14 @@ int main(void)
         glPolygonOffset( 1.0f, 1.0f );
         
         // MESH DRAW
-        /*
+        
         glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
         glDrawArrays(GL_TRIANGLES, 0, app.getScene(0).getMesh(0).FaceList.size() * 6);
-       
-        */
 
         if (app.activeTool)
-            app.activeTool->Render();
+            app.activeTool->RenderMESH();
 
         // ACTIVE ELEMENT DRAW
         if (app.firstClickPolyID != -1 && hoverPolyID != -1 && dragCounter == 0) // -1 facing angle > 90 degrees 
@@ -171,6 +172,9 @@ int main(void)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
         glDrawArrays(GL_LINES, 0, 48);
+
+        if (app.activeTool)
+            app.activeTool->RenderEDGES();
     
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -222,7 +226,7 @@ void init(GLFWwindow* window)
     for (int i = 0; i < mesh.FaceList.size(); i++)
     {
         HEdge* first = mesh.FaceList[i].edge;
-        
+        Vert* v = first->vertex;
         vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
        
         first = first->next;
@@ -245,7 +249,7 @@ void init(GLFWwindow* window)
 
         vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
 
-        }
+    }
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, (vboMesh.size()*3) * sizeof(float), vboMesh.data(), GL_DYNAMIC_DRAW);
@@ -298,6 +302,9 @@ void mousebutton_callback(GLFWwindow* window, int button, int action, int mods)
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS)
     {   
         app.firstClickPolyID = hoverPolyID;
+        
+        if(app.activeTool)
+            app.activeTool->LMB_Press();
     }
 
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE)

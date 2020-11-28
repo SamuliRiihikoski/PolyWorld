@@ -12,7 +12,11 @@ struct Vertex {
         pos[1] = y;
         pos[2] = z;
     }
-    Vertex();
+    Vertex() {
+        pos[0] = 0.0f;
+        pos[1] = 0.0f;
+        pos[2] = 0.0f;
+    }
 };
 
 struct Polygon {
