@@ -72,50 +72,28 @@ inline void App::updateMasterMesh(unsigned int VBO[])
     for (int i = 0; i < mesh.FaceList.size(); i++)
     {
         HEdge* first = mesh.FaceList[i].edge;
-        
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        first = first->next;
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        first = first->next;
+        for (int u = 0; u < 5; u++) { // TODO SUPPORTS ONLY QUAD POLYGONS
+            vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+            if(u==2)
+                vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
 
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        
-        first = first->next;
-
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        
-        first = first->next;
-        
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+            first = first->next;
+        } 
     }
 
     for (int i = 0; i < mesh.FaceList.size(); i++)
     {
+        std::cout << "FaceEdge: " << i << std::endl; 
         HEdge* first = mesh.FaceList[i].edge;
         Vert* v = first->vertex;
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-       
-        first = first->next;
 
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        for (int u = 0; u < 5; u++) {
+            vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+            first = first->next;
+            vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        }
 
-        first = first->next;
-
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
- 
-        first = first->next;
-
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-
-        
-        first = first->next;
-
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-
+      
     }
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
