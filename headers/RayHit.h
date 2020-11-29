@@ -38,10 +38,11 @@ private:
 inline pair<float, unsigned int> RayHit::rayPlaneHitPoint()
 {
     Mesh mesh = app.getScene(0).getMesh(0);
-    float t_final = FLT_MAX;
+    float minDistance = FLT_MAX;
     unsigned int faceID = -1;
     pair<float, unsigned> results;
     float tt = FLT_MAX;
+    float distance = FLT_MAX;
 
     for (int i = 0; i < mesh.FaceList.size(); i++)
     {   
@@ -82,6 +83,7 @@ inline pair<float, unsigned int> RayHit::rayPlaneHitPoint()
             continue; // polgyon facing away from ray
 
         glm::vec3 diff = p0 - orbitCamera.position();
+        distance = glm::length(diff);
 
         float t = glm::dot(diff, n) /dot;
 
@@ -106,13 +108,14 @@ inline pair<float, unsigned int> RayHit::rayPlaneHitPoint()
         }
 
         if (tt == 0) {
-            t_final = 0;
-            faceID = i;
-            break;
+            if (distance < minDistance) {
+                minDistance = distance;
+                faceID = i;
+            }
         }
     }
     //std::cout << "ID: " << faceID << std::endl;
-    results.first = t_final;
+    results.first = minDistance;
     results.second = faceID;
     return results;
 }

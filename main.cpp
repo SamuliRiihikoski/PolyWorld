@@ -132,9 +132,10 @@ int main(void)
         if(app.activeTool)
             app.executeTool();
 
-        if(app.updateScene)
+        if(app.updateScene) {
             app.updateMasterMesh(VBO);
-
+            app.updateScene = false;
+        }
 
 		glBindVertexArray(VAO);
 
@@ -155,7 +156,6 @@ int main(void)
         // ACTIVE ELEMENT DRAW
         if (app.firstClickPolyID != -1 && hoverPolyID != -1 && dragCounter == 0) // -1 facing angle > 90 degrees 
         {
-            
             shaderProgram.setUniform("acolor", glm::vec4(0.7f, 0.4f, 0.4f, 1.0f));
           
             glPolygonOffset( -0.1f, -0.1f );
@@ -291,14 +291,16 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     pair<float, unsigned int> results(FLT_MAX, -1);
     
     results = rayHit.rayPlaneHitPoint();
-    
+    std::cout << "id: " << results.second << " distance: " << results.first << std::endl;
+
     hoverPolyID = results.second;
 
     // Update active mouse hover polygon
-    if (results.second != app.activePolyID && results.first == 0) 
+    if (results.second != app.activePolyID && (results.second >= 0 && results.first < FLT_MAX) )
     {
         app.activePolyID = results.second;
         vector<Vertex> mesh;
+        std::cout << "tila" << std::endl;
 
         HEdge* first = app.getScene(0).getMesh(0).FaceList[results.second].edge;
         
