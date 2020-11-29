@@ -100,7 +100,6 @@ inline void Tool_extrude::LMB_Press()
     std::cout << "LMB_Press: Extrude" << std::endl;
     if (state == State::running) {
         state = State::execute;
-        
     }
 }
 
@@ -158,6 +157,8 @@ inline void Tool_extrude::onMouseMove(double& xpos, double& ypos)
 
         double powAndSum = pow(Xdiff, 2) + pow(Ydiff, 2);
         mouseDistance = (float) sqrt(powAndSum);
+
+        
         HEdge* first = TMesh.FaceList[0].edge;
     
         for (int i = 0; i < 4; i++) 
@@ -227,6 +228,10 @@ inline void Tool_extrude::mergeIntoMaster(Mesh* mesh, CommandInfo commandInfo)
   
 
     mesh->FaceList.push_back(Face(&mesh->HEdgeList[mesh->HEdgeList.size()-1]));
+
+    // Make clicked poly face = 0
+    mesh->FaceList[commandInfo.polyID].edge = nullptr;
+
     /*
     mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[4])); // 1
     mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[0])); // 1
@@ -248,6 +253,12 @@ inline void Tool_extrude::mergeIntoMaster(Mesh* mesh, CommandInfo commandInfo)
     mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[0])); // 5
     mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[4])); // 5
     */
+
+    TMesh.FaceList.clear();
+    TMesh.VertexList.clear();
+    TMesh.HEdgeList.clear();
+
+    updateToolMesh();
 }
 
 #endif

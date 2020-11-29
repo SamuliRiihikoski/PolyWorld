@@ -14,6 +14,7 @@ public:
     void newScene();
     Scene getScene(int index);
     unsigned int activePolyID;
+    float rayPolyDistance = -1;
     unsigned int firstClickPolyID;
     bool updateScene = false;
     
@@ -71,6 +72,9 @@ inline void App::updateMasterMesh(unsigned int VBO[])
     
     for (int i = 0; i < mesh.FaceList.size(); i++)
     {
+        if(mesh.FaceList[i].edge == nullptr)
+            continue;
+
         HEdge* first = mesh.FaceList[i].edge;
         for (int u = 0; u < 5; u++) { // TODO SUPPORTS ONLY QUAD POLYGONS
             vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
@@ -83,7 +87,9 @@ inline void App::updateMasterMesh(unsigned int VBO[])
 
     for (int i = 0; i < mesh.FaceList.size(); i++)
     {
-        std::cout << "FaceEdge: " << i << std::endl; 
+        if(mesh.FaceList[i].edge == nullptr)
+            continue;
+
         HEdge* first = mesh.FaceList[i].edge;
         Vert* v = first->vertex;
 
@@ -113,8 +119,8 @@ inline void App::updateMasterMesh(unsigned int VBO[])
     
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     
-
 	glBindVertexArray(0);
 }
+
 
 #endif
