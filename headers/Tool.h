@@ -33,7 +33,8 @@ public:
     virtual void onMouseMove(double& xpos, double& ypos) {};
 
     virtual CommandInfo isReadyToExecute() {}; // this is run in main.. listeting if tool needs to be executed.
-    
+    virtual void mergeIntoMaster(Mesh* mesh, CommandInfo commandInfo) {};
+
     void stateToInit();
 
     void RenderMESH();

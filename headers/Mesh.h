@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "Primitives.h"
+#include <deque>
 
 struct HEdge;
 struct Face;
@@ -68,9 +69,9 @@ public:
 
     int ID;
     std::string name;
-    std::vector<Vert> VertexList;
-    std::vector<Face> FaceList;
-    std::vector<HEdge> HEdgeList;
+    std::deque<Vert> VertexList;
+    std::deque<Face> FaceList;
+    std::deque<HEdge> HEdgeList;
     Mesh();
     Mesh(std::string name) : name(name) 
     {   

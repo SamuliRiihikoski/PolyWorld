@@ -15,11 +15,12 @@ public:
     Scene getScene(int index);
     unsigned int activePolyID;
     unsigned int firstClickPolyID;
+    bool updateScene = false;
     
     Tool* activeTool;
     void executeTool();
     void newActiveTool(string newToolName);
-    void updateMasterMesh();
+    void updateMasterMesh(unsigned int VBO[]);
 };
 
 inline void App::newScene()
@@ -49,27 +50,93 @@ inline void App::newActiveTool(string newToolName)
 
 inline void App::executeTool() 
 {
-    CommandInfo toolInfo = activeTool->isReadyToExecute();   
+    CommandInfo commandData = activeTool->isReadyToExecute();   
     
-    if(toolInfo.ready == false)
+    if(commandData.ready == false)
         return;
 
-    Mesh mesh = scenes[0].getMesh(0);
-    glm::vec3 normal = Tool::polyIdNormal(toolInfo.polyID, &mesh);
-    normal = glm::normalize(normal);
+    Mesh* mesh = scenes[0].getMeshPointer(0);
 
-    HEdge* edge = mesh.FaceList[toolInfo.polyID].edge;
-    
-    std::cout << "x: " << normal.x << " y: " << normal.y << " z: " << normal.z << std::endl;
-    
-
-    for (int i = 0; i < 4; i++) 
-    {
-
-    }
+    activeTool->mergeIntoMaster(mesh, commandData);
+    updateScene = true;
 
     activeTool->stateToInit();
 }
 
+inline void App::updateMasterMesh(unsigned int VBO[])
+{
+    Mesh mesh = getScene(0).getMesh(0);
+    vector<Vertex> vboMesh;
+    vector<Vertex> vboEdge;
+    
+    for (int i = 0; i < mesh.FaceList.size(); i++)
+    {
+        HEdge* first = mesh.FaceList[i].edge;
+        
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        first = first->next;
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        first = first->next;
+
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        
+        first = first->next;
+
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        
+        first = first->next;
+        
+        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+    }
+
+    for (int i = 0; i < mesh.FaceList.size(); i++)
+    {
+        HEdge* first = mesh.FaceList[i].edge;
+        Vert* v = first->vertex;
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+       
+        first = first->next;
+
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+
+        first = first->next;
+
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+ 
+        first = first->next;
+
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+
+        
+        first = first->next;
+
+        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
+
+    }
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, (vboMesh.size()*3) * sizeof(float), vboMesh.data(), GL_DYNAMIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+    glBufferData(GL_ARRAY_BUFFER,  18 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
+    glBufferData(GL_ARRAY_BUFFER, (vboEdge.size()*3) * sizeof(float), vboEdge.data(), GL_DYNAMIC_DRAW);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    
+
+	glBindVertexArray(0);
+}
 
 #endif

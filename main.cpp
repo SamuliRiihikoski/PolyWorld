@@ -132,6 +132,10 @@ int main(void)
         if(app.activeTool)
             app.executeTool();
 
+        if(app.updateScene)
+            app.updateMasterMesh(VBO);
+
+
 		glBindVertexArray(VAO);
 
         glEnable( GL_DEPTH_TEST );
@@ -191,7 +195,7 @@ int main(void)
 void init(GLFWwindow* window) 
 {
    
-    Mesh mesh = app.getScene(0).getMesh(0);
+    
 
 	glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -199,77 +203,7 @@ void init(GLFWwindow* window)
 	glGenBuffers(3, EBO);
 	glGenBuffers(3, VBO);
 
-    vector<Vertex> vboMesh;
-    vector<Vertex> vboEdge;
-    
-    for (int i = 0; i < mesh.FaceList.size(); i++)
-    {
-        HEdge* first = mesh.FaceList[i].edge;
-        
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        first = first->next;
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        first = first->next;
-
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        
-        first = first->next;
-
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        
-        first = first->next;
-        
-        vboMesh.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-    }
-
-    for (int i = 0; i < mesh.FaceList.size(); i++)
-    {
-        HEdge* first = mesh.FaceList[i].edge;
-        Vert* v = first->vertex;
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-       
-        first = first->next;
-
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-
-        first = first->next;
-
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
- 
-        first = first->next;
-
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-
-        
-        first = first->next;
-
-        vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-
-    }
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-	glBufferData(GL_ARRAY_BUFFER, (vboMesh.size()*3) * sizeof(float), vboMesh.data(), GL_DYNAMIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-    glBufferData(GL_ARRAY_BUFFER,  18 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
-    glBufferData(GL_ARRAY_BUFFER, (vboEdge.size()*3) * sizeof(float), vboEdge.data(), GL_DYNAMIC_DRAW);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    
-
-	glBindVertexArray(0);
+    app.updateMasterMesh(VBO);
 
 }
 
@@ -407,6 +341,23 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             app.activeTool->Execute(xpos, ypos, hoverPolyID, app.getScene(0).getMeshPointer(0));
         }
         
+    }
+
+     if (key == GLFW_KEY_C && action == GLFW_PRESS) 
+    {
+        Mesh mesh = app.getScene(0).getMesh(0);
+
+        for (int i = 0; i < mesh.FaceList.size(); i++) {
+        
+            std::cout << "Face " << i << std::endl;
+            HEdge* first = mesh.FaceList[i].edge;
+            HEdge* edge = first;
+
+            for (int hh = 0; hh < 4; hh++) {
+                std::cout << "x: " << edge->vertex->position[0] << " y: " << edge->vertex->position[1] << " z: " << edge->vertex->position[2] << std::endl;
+                edge = edge->next;
+            } 
+        }
     }
 }
 
