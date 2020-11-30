@@ -76,7 +76,7 @@ int main(void)
     if (!glfwInit())
 		return 0;
 	
-	GLFWwindow* window = glfwCreateWindow(appWidth, appHeight, "Pixler (version:0.02)", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(appWidth, appHeight, "Pixler (version:0.03)", NULL, NULL);
 	
 	if (window == NULL)
     {

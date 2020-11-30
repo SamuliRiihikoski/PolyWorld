@@ -95,13 +95,10 @@ inline void App::updateMasterMesh(unsigned int VBO[])
 
         first = mesh.FaceList[i].edge;
         Vert* v = first->vertex;
-        std::cout << "Face " << i <<  std::endl;
         for (int u = 0; u < 5; u++) {
-            std::cout << "x: " << first->vertex->position[0] << " y: " << first->vertex->position[1] << "z: " << first->vertex->position[2] << std::endl;
             vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
             first = first->next;
             vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-            std::cout << "x: " << first->vertex->position[0] << " y: " << first->vertex->position[1] << "z: " << first->vertex->position[2] << std::endl;
 
         }
 
@@ -110,21 +107,12 @@ inline void App::updateMasterMesh(unsigned int VBO[])
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, (vboMesh.size()*3) * sizeof(float), vboMesh.data(), GL_DYNAMIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
     
     glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
     glBufferData(GL_ARRAY_BUFFER,  18 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
     
     glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
     glBufferData(GL_ARRAY_BUFFER, (vboEdge.size()*3) * sizeof(float), vboEdge.data(), GL_DYNAMIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
     
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     
