@@ -1,13 +1,10 @@
 New 3d modelling app. Testing on linux only but this should also work in Windows OS.
 
-Done
+v0.03
 
-- Proper mesh data structure (halfedge-based) 
-- Add Cube for starting point for scene.
-- Basic Ray/Triangle intersection detection works.
-- Polygon selection (Colors the active polygon)
+F: Polygon extrude
+F: Camera rotate and zoom
+F: Polygon Selection
+I: Polygon ray detection becomes very slow when there is >100 polygons on scene. 
 
-Backlog
-
-- Extrude Polygon (ACTIVE)
-- There is issue with two faces are close and viewing angle is high. Not selectin right face.
+F = Feature, B = Bugs, I = Known issues
