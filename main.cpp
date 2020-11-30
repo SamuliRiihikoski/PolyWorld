@@ -175,7 +175,7 @@ int main(void)
         glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-        glDrawArrays(GL_LINES, 0, 48);
+        glDrawArrays(GL_LINES, 0, app.getScene(0).getMesh(0).FaceList.size() * 8);
 
         if (app.activeTool)
             app.activeTool->RenderEDGES();
@@ -290,8 +290,15 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     xPos = xpos;
     yPos = ypos;
 
+    if(app.activeTool)
+        app.activeTool->onMouseMove(xpos, ypos);
+
     if (app.disableRay)
         return;
+
+    if (app.activeTool)
+        if(app.activeTool->state == Tool::State::running)
+            return;
 
     // Hit detection class
     RayHit rayHit(xpos, ypos, appWidth, appHeight, matrixs.view, matrixs.projection, matrixs.model, orbitCamera, app);
@@ -324,9 +331,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
         glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
         glBufferSubData(GL_ARRAY_BUFFER, 0, 18*sizeof(float), mesh.data());   
     }
-    
-    if(app.activeTool)
-        app.activeTool->onMouseMove(xpos, ypos);
 
 }
 
