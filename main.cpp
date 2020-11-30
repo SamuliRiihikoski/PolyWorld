@@ -291,7 +291,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     pair<float, unsigned int> results(FLT_MAX, -1);
 
     results = rayHit.rayPlaneHitPoint();
-    std::cout << "id: " << results.second << " distance: " << results.first << std::endl;
 
     hoverPolyID = results.second;
 
@@ -300,7 +299,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     {
         app.activePolyID = results.second;
         vector<Vertex> mesh;
-        std::cout << "tila" << std::endl;
 
         HEdge* first = app.getScene(0).getMesh(0).FaceList[results.second].edge;
         

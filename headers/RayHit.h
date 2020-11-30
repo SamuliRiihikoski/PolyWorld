@@ -43,12 +43,11 @@ inline pair<float, unsigned int> RayHit::rayPlaneHitPoint()
     pair<float, unsigned> results;
     float tt = FLT_MAX;
     float distance = FLT_MAX;
-
+    std::cout << "kalle" << std::endl;
     for (int i = 0; i < mesh.FaceList.size(); i++)
     {   
         if (mesh.FaceList[i].edge == nullptr)
             continue;
-
         Vert* i0 = mesh.FaceList[i].edge->vertex;
         Vert* i1 = mesh.FaceList[i].edge->next->vertex;
         Vert* i2 = mesh.FaceList[i].edge->next->next->vertex;

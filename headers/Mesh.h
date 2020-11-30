@@ -81,46 +81,48 @@ public:
         // FRONT
         VertexList.push_back(Vert(-1.0f, -1.0f, 1.0f)); // 0
         VertexList.push_back(Vert( 1.0f, -1.0f, 1.0f)); // 1
-        VertexList.push_back(Vert(-1.0f,  1.0f, 1.0f)); // 2
-        VertexList.push_back(Vert( 1.0f,  1.0f, 1.0f)); // 3
+        VertexList.push_back(Vert( 1.0f,  1.0f, 1.0f)); // 2
+        VertexList.push_back(Vert(-1.0f,  1.0f, 1.0f)); // 3
+
 
         // BACK
-        VertexList.push_back(Vert(-1.0f,  1.0f, -1.0f)); // 4
-        VertexList.push_back(Vert( 1.0f,  1.0f, -1.0f)); // 5
-        VertexList.push_back(Vert(-1.0f, -1.0f, -1.0f)); // 6
-        VertexList.push_back(Vert( 1.0f, -1.0f, -1.0f)); // 7
+        VertexList.push_back(Vert(-1.0f, -1.0f, -1.0f)); // 4
+        VertexList.push_back(Vert( 1.0f, -1.0f, -1.0f)); // 5
+        VertexList.push_back(Vert( 1.0f,  1.0f, -1.0f)); // 6
+        VertexList.push_back(Vert(-1.0f,  1.0f, -1.0f)); // 7
+
         
         // HALF-EDGES
 
         HEdgeList.push_back(HEdge(&VertexList[1])); // 0
-        HEdgeList.push_back(HEdge(&VertexList[3])); // 1
-        HEdgeList.push_back(HEdge(&VertexList[2])); // 2
+        HEdgeList.push_back(HEdge(&VertexList[2])); // 1
+        HEdgeList.push_back(HEdge(&VertexList[3])); // 2
         HEdgeList.push_back(HEdge(&VertexList[0])); // 3
 
-        HEdgeList.push_back(HEdge(&VertexList[3])); // 4
-        HEdgeList.push_back(HEdge(&VertexList[5])); // 5
-        HEdgeList.push_back(HEdge(&VertexList[4])); // 6
-        HEdgeList.push_back(HEdge(&VertexList[2])); // 7
+        HEdgeList.push_back(HEdge(&VertexList[2])); // 4
+        HEdgeList.push_back(HEdge(&VertexList[6])); // 5
+        HEdgeList.push_back(HEdge(&VertexList[7])); // 6
+        HEdgeList.push_back(HEdge(&VertexList[3])); // 7
 
-        HEdgeList.push_back(HEdge(&VertexList[5])); // 8
+        HEdgeList.push_back(HEdge(&VertexList[4])); // 8
         HEdgeList.push_back(HEdge(&VertexList[7])); // 9
         HEdgeList.push_back(HEdge(&VertexList[6])); // 10
-        HEdgeList.push_back(HEdge(&VertexList[4])); // 11
+        HEdgeList.push_back(HEdge(&VertexList[5])); // 11
 
-        HEdgeList.push_back(HEdge(&VertexList[7])); // 12
+        HEdgeList.push_back(HEdge(&VertexList[5])); // 12
         HEdgeList.push_back(HEdge(&VertexList[1])); // 13
         HEdgeList.push_back(HEdge(&VertexList[0])); // 14
-        HEdgeList.push_back(HEdge(&VertexList[6])); // 15
+        HEdgeList.push_back(HEdge(&VertexList[4])); // 15
 
-        HEdgeList.push_back(HEdge(&VertexList[5])); // 16
+        HEdgeList.push_back(HEdge(&VertexList[0])); // 16
         HEdgeList.push_back(HEdge(&VertexList[3])); // 17
-        HEdgeList.push_back(HEdge(&VertexList[1])); // 18
-        HEdgeList.push_back(HEdge(&VertexList[7])); // 19
+        HEdgeList.push_back(HEdge(&VertexList[7])); // 18
+        HEdgeList.push_back(HEdge(&VertexList[4])); // 19
 
-        HEdgeList.push_back(HEdge(&VertexList[6])); // 20
-        HEdgeList.push_back(HEdge(&VertexList[0])); // 21
+        HEdgeList.push_back(HEdge(&VertexList[5])); // 20
+        HEdgeList.push_back(HEdge(&VertexList[6])); // 21
         HEdgeList.push_back(HEdge(&VertexList[2])); // 22
-        HEdgeList.push_back(HEdge(&VertexList[4])); // 23
+        HEdgeList.push_back(HEdge(&VertexList[1])); // 23
         
         // HALF-EDGES NEXTS
 
@@ -153,70 +155,6 @@ public:
         HEdgeList[21].next = &HEdgeList[22]; // 21
         HEdgeList[22].next = &HEdgeList[23]; // 22
         HEdgeList[23].next = &HEdgeList[20]; // 23
-
-        // HALF-EDGES PREVS
-
-        HEdgeList[0].prev = &HEdgeList[3]; // 0
-        HEdgeList[1].prev = &HEdgeList[0]; // 1
-        HEdgeList[2].prev = &HEdgeList[1]; // 2
-        HEdgeList[3].prev = &HEdgeList[2]; // 3
-
-        HEdgeList[4].prev = &HEdgeList[7]; // 4
-        HEdgeList[5].prev = &HEdgeList[4]; // 5
-        HEdgeList[6].prev = &HEdgeList[5]; // 6
-        HEdgeList[7].prev = &HEdgeList[6]; // 7
-
-        HEdgeList[8].prev = &HEdgeList[11]; // 8
-        HEdgeList[9].prev = &HEdgeList[8]; // 9
-        HEdgeList[10].prev = &HEdgeList[9]; // 10
-        HEdgeList[11].prev = &HEdgeList[10]; // 11
-
-        HEdgeList[12].prev = &HEdgeList[15]; // 12
-        HEdgeList[13].prev = &HEdgeList[12]; // 13
-        HEdgeList[14].prev = &HEdgeList[13]; // 14
-        HEdgeList[15].prev = &HEdgeList[14]; // 15
-
-        HEdgeList[16].prev = &HEdgeList[19]; // 16
-        HEdgeList[17].prev = &HEdgeList[16]; // 17
-        HEdgeList[18].prev = &HEdgeList[17]; // 18
-        HEdgeList[19].prev = &HEdgeList[18]; // 19
-
-        HEdgeList[20].prev = &HEdgeList[23]; // 20
-        HEdgeList[21].prev = &HEdgeList[20]; // 21
-        HEdgeList[22].prev = &HEdgeList[21]; // 22
-        HEdgeList[23].prev = &HEdgeList[22]; // 23
-
-        // HALF-EDGES OPPOSITE
-
-        HEdgeList[0].opposite = &HEdgeList[14]; // 0
-        HEdgeList[1].opposite = &HEdgeList[18]; // 1
-        HEdgeList[2].opposite = &HEdgeList[4]; // 2
-        HEdgeList[3].opposite = &HEdgeList[22]; // 3
-
-        HEdgeList[4].opposite = &HEdgeList[2]; // 4
-        HEdgeList[5].opposite = &HEdgeList[17]; // 5
-        HEdgeList[6].opposite = &HEdgeList[8]; // 6
-        HEdgeList[7].opposite = &HEdgeList[23]; // 7
-
-        HEdgeList[8].opposite = &HEdgeList[6]; // 8
-        HEdgeList[9].opposite = &HEdgeList[16]; // 9
-        HEdgeList[10].opposite = &HEdgeList[12]; // 10
-        HEdgeList[11].opposite = &HEdgeList[20]; // 11
-
-        HEdgeList[12].opposite = &HEdgeList[10]; // 12
-        HEdgeList[13].opposite = &HEdgeList[19]; // 13
-        HEdgeList[14].opposite = &HEdgeList[0]; // 14
-        HEdgeList[15].opposite = &HEdgeList[21]; // 15
-
-        HEdgeList[16].opposite = &HEdgeList[9]; // 16
-        HEdgeList[17].opposite = &HEdgeList[5]; // 17
-        HEdgeList[18].opposite = &HEdgeList[1]; // 18
-        HEdgeList[19].opposite = &HEdgeList[13]; // 19
-
-        HEdgeList[20].opposite = &HEdgeList[11]; // 20
-        HEdgeList[21].opposite = &HEdgeList[15]; // 21
-        HEdgeList[22].opposite = &HEdgeList[3]; // 22
-        HEdgeList[23].opposite = &HEdgeList[7]; // 23
 
         // FACES
         
