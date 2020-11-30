@@ -1,10 +1,12 @@
 New 3d modelling app. Testing on linux only but this should also work in Windows OS.
 
+v0.04
+
+- Hover select use cpu threads. Still uses deque instead vectors.  
+
 v0.03
 
-F: Polygon extrude  
-F: Camera rotate and zoom  
-F: Polygon Selection  
-I: Polygon ray detection becomes very slow when there is >100 polygons on scene.   
-
-F = Feature, B = Bugs, I = Known issues
+- Polygon extrude (E key: LMB = apply extude, RMB = cancels extude)  
+- Camera rotate and zoom  
+- Polygon hovering. (Proper selection is still not working)  
+- Polygon ray detection becomes very slow when there is >100 polygons on scene.   
