@@ -10,3 +10,4 @@ Done
 Backlog
 
 - Extrude Polygon (ACTIVE)
+- There is issue with two faces are close and viewing angle is high. Not selectin right face.

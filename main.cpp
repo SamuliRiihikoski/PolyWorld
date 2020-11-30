@@ -76,7 +76,7 @@ int main(void)
     if (!glfwInit())
 		return 0;
 	
-	GLFWwindow* window = glfwCreateWindow(appWidth, appHeight, "PolyWorld (version:0.02)", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(appWidth, appHeight, "Pixler (version:0.02)", NULL, NULL);
 	
 	if (window == NULL)
     {
@@ -289,7 +289,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     // Hit detection class
     RayHit rayHit(xpos, ypos, appWidth, appHeight, matrixs.view, matrixs.projection, matrixs.model, orbitCamera, app);
     pair<float, unsigned int> results(FLT_MAX, -1);
-    
+
     results = rayHit.rayPlaneHitPoint();
     std::cout << "id: " << results.second << " distance: " << results.first << std::endl;
 
@@ -353,6 +353,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         
             std::cout << "Face " << i << std::endl;
             HEdge* first = mesh.FaceList[i].edge;
+
+            if(first == nullptr)
+                continue;
+
             HEdge* edge = first;
 
             for (int hh = 0; hh < 4; hh++) {
