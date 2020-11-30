@@ -269,9 +269,13 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
         if (app.firstClickPolyID == -1) {// -1 = Backround 
             gYaw -= ((float)xpos - lastMousePos.x) * MOUSE_SENSITIVITY;
             gPitch += ((float)ypos - lastMousePos.y) * MOUSE_SENSITIVITY;
+            app.disableRay = true;
         }
         
     }
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE)
+        app.disableRay = false;
 
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
     {
@@ -286,6 +290,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     xPos = xpos;
     yPos = ypos;
 
+    if (app.disableRay)
+        return;
+
     // Hit detection class
     RayHit rayHit(xpos, ypos, appWidth, appHeight, matrixs.view, matrixs.projection, matrixs.model, orbitCamera, app);
     pair<float, unsigned int> results(FLT_MAX, -1);
@@ -299,6 +306,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     {
         app.activePolyID = results.second;
         vector<Vertex> mesh;
+
 
         HEdge* first = app.getScene(0).getMesh(0).FaceList[results.second].edge;
         

@@ -17,6 +17,8 @@ public:
     float rayPolyDistance = -1;
     unsigned int firstClickPolyID;
     bool updateScene = false;
+    bool disableRay = false;
+    
     
     Tool* activeTool;
     void executeTool();
