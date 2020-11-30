@@ -14,8 +14,8 @@ class Tool_extrude : public Tool
 
 public:
     glm::vec3 initPos[4];
-    void LMB_Press();
-    void RMB_Press();
+    void LMB_Click();
+    void RMB_Click();
     void Execute(double& xpos, double& ypos, unsigned int polyID, Mesh* mesh);
     void onMouseMove(double& xpos, double& ypos);
     void mergeIntoMaster(Mesh* mesh, CommandInfo commandInfo);
@@ -94,7 +94,7 @@ inline Tool_extrude::Tool_extrude()
 
 }
 
-inline void Tool_extrude::LMB_Press()
+inline void Tool_extrude::LMB_Click()
 {
    
     std::cout << "LMB_Press: Extrude" << std::endl;
@@ -103,13 +103,13 @@ inline void Tool_extrude::LMB_Press()
     }
 }
 
-inline void Tool_extrude::RMB_Press()
+inline void Tool_extrude::RMB_Click()
 {
     TMesh.FaceList.clear();
     TMesh.VertexList.clear();
     TMesh.HEdgeList.clear();
    
-
+    state = State::init;
     updateToolMesh();
 
     std::cout << "RMB_Press: Cancel Extrude" << std::endl;
@@ -210,15 +210,21 @@ inline void Tool_extrude::mergeIntoMaster(Mesh* mesh, CommandInfo commandInfo)
     normalID = glm::normalize(normalID);
     glm::vec3 tempVec;
 
-    for (int i = 0; i < TMesh.VertexList.size(); i++) {
-        
-        tempVec.x = TMesh.VertexList[i].position[0]  + normalID.x * kerroin;
-        tempVec.y = TMesh.VertexList[i].position[1] + normalID.y * kerroin; 
-        tempVec.z = TMesh.VertexList[i].position[2]  + normalID.z * kerroin; 
+    HEdge* start = mesh->FaceList[commandInfo.polyID].edge;
+    HEdge* loopEdge = start;
+
+    do {
+
+        tempVec.x = loopEdge->vertex->position[0]  + normalID.x * kerroin;
+        tempVec.y = loopEdge->vertex->position[1] + normalID.y * kerroin; 
+        tempVec.z = loopEdge->vertex->position[2]  + normalID.z * kerroin; 
 
         mesh->VertexList.push_back(Vert(tempVec.x, tempVec.y, tempVec.z));
         mesh->HEdgeList.push_back(HEdge(&mesh->VertexList.back()));
-    }
+        
+        loopEdge = loopEdge->next;
+
+    } while (loopEdge != start);
     
     mesh->HEdgeList[mesh->HEdgeList.size()-4].next = &mesh->HEdgeList[mesh->HEdgeList.size()-3];
     mesh->HEdgeList[mesh->HEdgeList.size()-3].next = &mesh->HEdgeList[mesh->HEdgeList.size()-2];
@@ -284,74 +290,6 @@ inline void Tool_extrude::mergeIntoMaster(Mesh* mesh, CommandInfo commandInfo)
     mesh->HEdgeList[mesh->HEdgeList.size()-1].next = &mesh->HEdgeList[mesh->HEdgeList.size()-4];    
     
     mesh->FaceList.push_back(Face(&mesh->HEdgeList[mesh->HEdgeList.size()-1]));
-
-    /*
-    edge = edge->next;
-    mesh->HEdgeList.push_back(HEdge(edge->vertex));
-    mesh->HEdgeList.push_back(HEdge(&mesh->VertexList[mesh->VertexList.size()-3]));
-    mesh->HEdgeList.push_back(HEdge(&mesh->VertexList[mesh->VertexList.size()-4]));
-    mesh->HEdgeList.push_back(HEdge(edge->next->next->next->vertex));
-
-    mesh->HEdgeList[mesh->HEdgeList.size()-4].next = &mesh->HEdgeList[mesh->HEdgeList.size()-3];
-    mesh->HEdgeList[mesh->HEdgeList.size()-3].next = &mesh->HEdgeList[mesh->HEdgeList.size()-2];
-    mesh->HEdgeList[mesh->HEdgeList.size()-2].next = &mesh->HEdgeList[mesh->HEdgeList.size()-1];
-    mesh->HEdgeList[mesh->HEdgeList.size()-1].next = &mesh->HEdgeList[mesh->HEdgeList.size()-4];    
-    
-    mesh->FaceList.push_back(Face(&mesh->HEdgeList[mesh->HEdgeList.size()-1]));
-
-
-    edge = edge->next;
-    mesh->HEdgeList.push_back(HEdge(edge->vertex));
-    mesh->HEdgeList.push_back(HEdge(&mesh->VertexList[mesh->VertexList.size()-2]));
-    mesh->HEdgeList.push_back(HEdge(&mesh->VertexList[mesh->VertexList.size()-3]));
-    mesh->HEdgeList.push_back(HEdge(edge->next->next->next->vertex));
-
-    mesh->HEdgeList[mesh->HEdgeList.size()-4].next = &mesh->HEdgeList[mesh->HEdgeList.size()-3];
-    mesh->HEdgeList[mesh->HEdgeList.size()-3].next = &mesh->HEdgeList[mesh->HEdgeList.size()-2];
-    mesh->HEdgeList[mesh->HEdgeList.size()-2].next = &mesh->HEdgeList[mesh->HEdgeList.size()-1];
-    mesh->HEdgeList[mesh->HEdgeList.size()-1].next = &mesh->HEdgeList[mesh->HEdgeList.size()-4];    
-    
-    mesh->FaceList.push_back(Face(&mesh->HEdgeList[mesh->HEdgeList.size()-1]));
-    
-    edge = edge->next;
-    mesh->HEdgeList.push_back(HEdge(edge->vertex));
-    mesh->HEdgeList.push_back(HEdge(&mesh->VertexList[mesh->VertexList.size()-1]));
-    mesh->HEdgeList.push_back(HEdge(&mesh->VertexList[mesh->VertexList.size()-2]));
-    mesh->HEdgeList.push_back(HEdge(edge->next->next->next->vertex));
-
-    mesh->HEdgeList[mesh->HEdgeList.size()-4].next = &mesh->HEdgeList[mesh->HEdgeList.size()-3];
-    mesh->HEdgeList[mesh->HEdgeList.size()-3].next = &mesh->HEdgeList[mesh->HEdgeList.size()-2];
-    mesh->HEdgeList[mesh->HEdgeList.size()-2].next = &mesh->HEdgeList[mesh->HEdgeList.size()-1];
-    mesh->HEdgeList[mesh->HEdgeList.size()-1].next = &mesh->HEdgeList[mesh->HEdgeList.size()-4];    
-    
-    mesh->FaceList.push_back(Face(&mesh->HEdgeList[mesh->HEdgeList.size()-1]));
-
-
-
-
-    // Make clicked poly face = 0
-
-    
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[4])); // 1
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[0])); // 1
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[3])); // 1
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[7])); // 1
-
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[7])); // 2
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[3])); // 2
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[2])); // 2
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[6])); // 2
-
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[6])); // 3
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[2])); // 3
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[1])); // 3
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[5])); // 3
-
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[5])); // 5
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[1])); // 5
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[0])); // 5
-    mesh->HEdgeList.push_back(HEdge(&TMesh.VertexList[4])); // 5
-    */
     
     mesh->FaceList[commandInfo.polyID].edge = nullptr;
 

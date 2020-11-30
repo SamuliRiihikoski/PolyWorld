@@ -13,6 +13,7 @@
 #include "headers/Gradient.h"
 #include "headers/RayHit.h"
 #include "headers/App.h"
+#include <pthread.h>
 
 #define SHADER_HEADER "#version 330 core\n"
 #define SHADER_STR(x) #x
@@ -75,8 +76,9 @@ int main(void)
 
     if (!glfwInit())
 		return 0;
-	
-	GLFWwindow* window = glfwCreateWindow(appWidth, appHeight, "Pixler (version:0.03)", NULL, NULL);
+	//GLFWmonitor* primary = glfwGetPrimaryMonitor();      // This is needes when fullscreen 
+    //const GLFWvidmode* mode = glfwGetVideoMode(primary);
+	GLFWwindow* window = glfwCreateWindow(appWidth, appHeight, "Pixler (version:0.04A)", NULL, NULL);
 	
 	if (window == NULL)
     {
@@ -238,7 +240,7 @@ void mousebutton_callback(GLFWwindow* window, int button, int action, int mods)
         app.firstClickPolyID = hoverPolyID;
         
         if(app.activeTool)
-            app.activeTool->LMB_Press();
+            app.activeTool->LMB_Click();
     }
 
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE)
@@ -252,7 +254,7 @@ void mousebutton_callback(GLFWwindow* window, int button, int action, int mods)
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
     {
         if(app.activeTool)
-            app.activeTool->RMB_Press();
+            app.activeTool->RMB_Click();
     }
 
 }
@@ -282,6 +284,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
         float dx = 0.01f * ((float)xpos - lastMousePos.x);
         float dy = 0.01f * ((float)ypos - lastMousePos.y);
         gRadius += dx -dy;
+
+        if(app.activeTool)
+            app.activeTool->RMB_Click();
     }
 
     lastMousePos.x = (float)xpos;

@@ -27,8 +27,8 @@ public:
     CommandInfo commandInfo;
     glm::vec3 normalID; 
 
-    virtual void LMB_Press() {};
-    virtual void RMB_Press() {};
+    virtual void LMB_Click() {};
+    virtual void RMB_Click() {};
     virtual void Execute(double& xpos, double& ypos, unsigned int polyID, Mesh* mesh) {};
     virtual void onMouseMove(double& xpos, double& ypos) {};
 
