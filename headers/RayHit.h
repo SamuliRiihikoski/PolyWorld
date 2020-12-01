@@ -39,8 +39,7 @@ struct threadData
 class RayHit
 {
 public:
-    //float pointInsideTriangle(); // -1 = background, other wise returns polygon ID.
-    static float testi(glm::vec3& point, glm::vec3& n, glm::vec3& p0, glm::vec3& p1, glm::vec3& p2, Mesh& mesh, float t);
+    static float rayOnTriangle(glm::vec3& point, glm::vec3& n, glm::vec3& p0, glm::vec3& p1, glm::vec3& p2, Mesh& mesh, float t);
     RayHit(double& xpos, double& ypos, int& appWidth, int& appHeight, 
            glm::mat4& view, glm::mat4& projection, glm::mat4& model, OrbitCamera& orbitCamera, App& app) :
            xpos(xpos), ypos(ypos), appWidth(appWidth), appHeight(appHeight), view(view), projection(projection),
@@ -53,9 +52,6 @@ public:
     
 
 private:
-    float pointOnTriangle(glm::vec3& point, glm::vec3& n, 
-                          glm::vec3& p1, glm::vec3& p2, glm::vec3& p3); 
-    
     double& xpos, ypos;
     int& appWidth, appHeight;
     glm::mat4& view, projection, model;
@@ -103,91 +99,6 @@ inline pair<float, unsigned int> RayHit::rayPlaneHitPoint()
     return results;
 }
 
-inline float RayHit::pointOnTriangle(glm::vec3& point, glm::vec3& n, glm::vec3& p0, glm::vec3& p1, glm::vec3& p2)
-{
-    Mesh mesh = app.getScene(0).getMesh(0);
-
-    const float kNoIntersection =  FLT_MAX;
-
-    glm::vec3 p = point;
-
-    float u0, u1, u2;
-    float v0, v1, v2;
-
-    if (fabs(n.x) > fabs(n.y)) 
-    {
-        if (fabs(n.x) > fabs(n.z))
-        {
-            u0 = p.y - p0.y;
-            u1 = p1.y - p0.y;
-            u2 = p2.y - p0.y;
-
-            v0 = p.z - p0.z;
-            v1 = p1.z - p0.z;
-            v2 = p2.z - p0.z;
-        }
-        else
-        {
-            u0 = p.x - p0.x;
-            u1 = p1.x - p0.x;
-            u2 = p2.x - p0.x;
-
-            v0 = p.y - p0.y;
-            v1 = p1.y - p0.y;
-            v2 = p2.y - p0.y;
-        }
-    }
-    else
-    {
-        if (fabs(n.y) > fabs(n.z))
-        {
-            u0 = p.x - p0.x;
-            u1 = p1.x - p0.x;
-            u2 = p2.x - p0.x;
-
-            v0 = p.z - p0.z;
-            v1 = p1.z - p0.z;
-            v2 = p2.z - p0.z;
-        }
-        else
-        {
-            u0 = p.x - p0.x;
-            u1 = p1.x - p0.x;
-            u2 = p2.x - p0.x;
-
-            v0 = p.y - p0.y;
-            v1 = p1.y - p0.y;
-            v2 = p2.y - p0.y;
-        }
-    }
-
-    float temp = u1 * v2 - v1 * u2;
-    
-    if (!(temp != 0.0f)) {
-        return kNoIntersection;
-    }
-    
-    temp = 1.0f / temp;
-    float alpha = (u0 * v2 - v0 * u2) * temp;
-    if (! (alpha >= 0.0f)) {
-        return kNoIntersection;
-    }
-    
-    float beta = (u1 * v0 - v1 * u0) * temp;
-
-    if (! (beta >= 0.0f)) {
-        return kNoIntersection;
-    }
-
-    float gamma = 1.0f - alpha - beta;
-
-    if (!(gamma >= 0.0f)) {
-        return kNoIntersection;
-    }  
-    
-    return t;
-}
-
 void* RayHit::calcRay(void* param) 
 {
     struct threadData *data = (struct threadData*) param;
@@ -205,6 +116,21 @@ void* RayHit::calcRay(void* param)
     float distance = FLT_MAX;
     long faceID = -1;
     float minDistance = FLT_MAX;
+
+    // NDC
+    float x = 2 * (xpos / appWidth) - 1.0f;
+    float y = 1.0f - 2.0f * (ypos / appHeight);
+    float z = -1.0f;
+    glm::vec3 ray_nds = glm::vec3(x, y, z);
+    glm::vec4 ray_clip = glm::vec4(x, y, -1.0f, 1.0f);
+
+    // Camera (EYE) Coordinates
+    glm::vec4 ray_eye = glm::inverse(projection) * ray_clip;
+    ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0f, 0.0f);
+    
+    // World coordinate
+    glm::vec3 ray_wor = (glm::inverse(view) * ray_eye);
+    ray_wor = glm::normalize(ray_wor);
 
 
     if (tID == NUMBER_OF_THREADS - 1) {
@@ -226,23 +152,6 @@ void* RayHit::calcRay(void* param)
         glm::vec3 p2 = glm::vec3(i2->position[0] , i2->position[1], i2->position[2]);
         glm::vec3 p3 = glm::vec3(i3->position[0] , i3->position[1], i3->position[2]);
 
-        // NDC
-        float x = 2 * (xpos / appWidth) - 1.0f;
-        float y = 1.0f - 2.0f * (ypos / appHeight);
-        float z = -1.0f;
-        glm::vec3 ray_nds = glm::vec3(x, y, z);
-        glm::vec4 ray_clip = glm::vec4(x, y, -1.0f, 1.0f);
-
-        // Camera (EYE) Coordinates
-        glm::vec4 ray_eye = glm::inverse(projection) * ray_clip;
-        ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0f, 0.0f);
-        
-
-        
-        // World coordinate
-        glm::vec3 ray_wor = (glm::inverse(view) * ray_eye);
-        ray_wor = glm::normalize(ray_wor);
-
         // FIRST TRIANGLE IN FACE
 
         glm::vec3 n1 = p1 - p0;
@@ -258,25 +167,21 @@ void* RayHit::calcRay(void* param)
         distance = glm::length(diff);
 
         float t = glm::dot(diff, n) /dot;
+    
+        if (t < 0.0f)
+            continue;
+
+        if (Tresults.distance < t)
+            continue;
 
         glm::vec3 point = orbitCamera.position() + (ray_wor * t);
-        //tt = pointOnTriangle(point, n, p0, p1, p2);
-        tt = testi(point, n, p0, p1, p2, data->mesh, t);
+        tt = rayOnTriangle(point, n, p0, p1, p2, data->mesh, t);
         
           // SECOND TRIANGLE IN FACE
 
         if (tt == FLT_MAX)
         {
-            n1 = p3 - p2;
-            n2 = p0 - p2;
-            float dot = glm::dot(n, ray_wor);
-            glm::vec3 diff = p0 - orbitCamera.position();
-
-            float t = glm::dot(diff, n) /dot;
-
-            glm::vec3 point = orbitCamera.position() + (ray_wor * t);
-
-            tt = testi(point, n, p0, p3, p2, data->mesh, t);
+            tt = rayOnTriangle(point, n, p0, p3, p2, data->mesh, t);
         }
         
         if (tt != FLT_MAX) {
@@ -286,9 +191,13 @@ void* RayHit::calcRay(void* param)
                 faceID = i;
             }
         }
+        else
+            continue;
+        
+        
         pthread_mutex_lock(&lock);
         
-        if(minDistance >= 0 && minDistance < Tresults.distance)
+        if(minDistance < Tresults.distance)
         {
             Tresults.polyID = faceID;
             Tresults.distance = minDistance;
@@ -299,7 +208,7 @@ void* RayHit::calcRay(void* param)
     }
 }
 
-inline float RayHit::testi(glm::vec3& point, glm::vec3& n, glm::vec3& p0, glm::vec3& p1, glm::vec3& p2, Mesh& mesh, float t) 
+inline float RayHit::rayOnTriangle(glm::vec3& point, glm::vec3& n, glm::vec3& p0, glm::vec3& p1, glm::vec3& p2, Mesh& mesh, float t) 
 {
     const float kNoIntersection =  FLT_MAX;
 
@@ -381,7 +290,5 @@ inline float RayHit::testi(glm::vec3& point, glm::vec3& n, glm::vec3& p0, glm::v
     
     return t;
 }
-
-
 
 #endif
