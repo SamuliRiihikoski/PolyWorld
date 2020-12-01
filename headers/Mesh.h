@@ -69,12 +69,15 @@ public:
 
     int ID;
     std::string name;
-    std::deque<Vert> VertexList;
-    std::deque<Face> FaceList;
-    std::deque<HEdge> HEdgeList;
+    std::vector<Vert> VertexList;
+    std::vector<Face> FaceList;
+    std::vector<HEdge> HEdgeList;
     Mesh();
     Mesh(std::string name) : name(name) 
     {   
+        VertexList.reserve(10000);
+        FaceList.reserve(10000);
+        HEdgeList.reserve(100000);
         
         // VERTEXS
 
