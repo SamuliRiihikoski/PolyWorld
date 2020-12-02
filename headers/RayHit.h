@@ -186,8 +186,8 @@ void* RayHit::calcRay(void* param)
         
         if (tt != FLT_MAX) {
             
-            if (distance < minDistance) {
-                minDistance = distance;
+            if (t < minDistance) {
+                minDistance = t;
                 faceID = i;
             }
         }
