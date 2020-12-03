@@ -21,7 +21,7 @@ struct ThreadResult
 pthread_mutex_t lock;
 ThreadResult Tresults;
 
-#define NUMBER_OF_THREADS 10
+#define NUMBER_OF_THREADS 32
 
 struct threadData 
 {
@@ -145,12 +145,10 @@ void* RayHit::calcRay(void* param)
         Vert* i0 = data->mesh.FaceList[i].edge->vertex;
         Vert* i1 = data->mesh.FaceList[i].edge->next->vertex;
         Vert* i2 = data->mesh.FaceList[i].edge->next->next->vertex;
-        Vert* i3 = data->mesh.FaceList[i].edge->next->next->next->vertex;
         
         glm::vec3 p0 = glm::vec3(i0->position[0] , i0->position[1], i0->position[2]);
         glm::vec3 p1 = glm::vec3(i1->position[0] , i1->position[1], i1->position[2]);
         glm::vec3 p2 = glm::vec3(i2->position[0] , i2->position[1], i2->position[2]);
-        glm::vec3 p3 = glm::vec3(i3->position[0] , i3->position[1], i3->position[2]);
 
         // FIRST TRIANGLE IN FACE
 
@@ -162,6 +160,9 @@ void* RayHit::calcRay(void* param)
 
         if (dot < 0.001)
             continue; // polgyon facing away from ray
+
+        Vert* i3 = data->mesh.FaceList[i].edge->next->next->next->vertex;
+        glm::vec3 p3 = glm::vec3(i3->position[0] , i3->position[1], i3->position[2]);
 
         glm::vec3 diff = p0 - orbitCamera.position();
         distance = glm::length(diff);

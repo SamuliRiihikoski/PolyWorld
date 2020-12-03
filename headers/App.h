@@ -19,6 +19,10 @@ public:
     bool updateScene = false;
     bool disableRay = false;
     
+    enum class MainMode {object, edit};
+    enum class SelMode {vertex, edge, face, multi};
+    MainMode mainMode = MainMode::edit; // TODO: default mode should be 'object'.
+    SelMode selMode = SelMode::face;
     
     Tool* activeTool;
     void executeTool();
