@@ -63,11 +63,14 @@ Matrixs matrixs;
 
 //Main Application Class
 App app;
+
 unsigned int hoverPolyID;
 
-int main(void) 
+int main(int argc, char* argv[]) 
 {
     app.newScene();
+    if (app.socketManager.createConn(argc, argv) == false)
+        return 0;
 
     glm::vec3 cubePos = glm::vec3(0.0f, 0.0f, 0.0f); 
 
@@ -104,7 +107,14 @@ int main(void)
 
     init(window);
 
+    app.socketManager.startSocketLoop();
+
     while (!glfwWindowShouldClose(window)) {
+
+             if (externalCommandReady) {
+            app.executeExternalTool();
+            externalCommandReady = false;
+        }
 
         // Matrixs
         glm::mat4 view1; 
@@ -170,9 +180,16 @@ int main(void)
         
         // EDGE DRAW
         glPolygonOffset( -1.0f, -1.0f );
-        glLineWidth(3.0f);
+        
+        if(app.getMode() == Mode::object) {
+            shaderProgram.setUniform("acolor", glm::vec4(0.8f, 0.8f, 0.8f, 1.0f));
+            glLineWidth(5.0f);
+        } else {
+            shaderProgram.setUniform("acolor", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+            glLineWidth(3.0f);
+        }
+
         glEnable(GL_LINE_SMOOTH);
-        shaderProgram.setUniform("acolor", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
         
         glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -180,17 +197,19 @@ int main(void)
         glDrawArrays(GL_LINES, 0, app.getScene(0).getMesh(0).FaceList.size() * 8);
 
         if (app.activeTool)
-            app.activeTool->RenderEDGES();
+            app.activeTool->RenderEDGES(); 
     
         glfwSwapBuffers(window);
         glfwPollEvents();
 	}
-
+    
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(3, VBO);
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
+    stopSocketLoop = true;
+
 	return 0;;
 }
 
@@ -341,45 +360,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    string newToolName;
-
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    if (key == GLFW_KEY_E && action == GLFW_PRESS) 
-    {
-        newToolName = "EXTRUDE";
-        app.newActiveTool(newToolName);
-
-        double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
-
-        if(hoverPolyID != -1) {
-            app.activeTool->Execute(xpos, ypos, hoverPolyID, app.getScene(0).getMeshPointer(0));
-        }
-        
-    }
-
-     if (key == GLFW_KEY_C && action == GLFW_PRESS) 
-    {
-        Mesh mesh = app.getScene(0).getMesh(0);
-
-        for (int i = 0; i < mesh.FaceList.size(); i++) {
-        
-            std::cout << "Face " << i << std::endl;
-            HEdge* first = mesh.FaceList[i].edge;
-
-            if(first == nullptr)
-                continue;
-
-            HEdge* edge = first;
-
-            for (int hh = 0; hh < 4; hh++) {
-                std::cout << "x: " << edge->vertex->position[0] << " y: " << edge->vertex->position[1] << " z: " << edge->vertex->position[2] << std::endl;
-                edge = edge->next;
-            } 
-        }
-    }
+    app.keyInput(window, key, scancode, action, mods, hoverPolyID);
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called

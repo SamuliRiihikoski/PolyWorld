@@ -2,14 +2,23 @@
 #define APP_H
 
 #include <vector>
+#include <string>
 #include "Scene.h"
 #include "Tool.h"
 #include "Tool_extrude.h"
 #include "Tool_loopcut.h"
+#include "SocketManager.h"
+
+enum class Mode {object, edit};
+enum class SelMode {vertex, edge, face, multi};
 
 class App
 {
-    std::vector<Scene> scenes;
+    std::vector<Scene> scenes;  
+    Mode mainMode = Mode::object;
+    SelMode selMode = SelMode::face;
+ 
+
 public:
     void newScene();
     Scene getScene(int index);
@@ -19,15 +28,18 @@ public:
     bool updateScene = false;
     bool disableRay = false;
     
-    enum class MainMode {object, edit};
-    enum class SelMode {vertex, edge, face, multi};
-    MainMode mainMode = MainMode::edit; // TODO: default mode should be 'object'.
-    SelMode selMode = SelMode::face;
+    Mode getMode();
+    SocketManager socketManager;
     
-    Tool* activeTool;
+    Tool* activeTool; // users active tool
+    Tool* externalTool; // online users tool pointer for command line
     void executeTool();
-    void newActiveTool(string newToolName);
+    void executeExternalTool();
+    void newActiveTool(Tool* tool, string newToolName);
     void updateMasterMesh(unsigned int VBO[]);
+    void keyInput(GLFWwindow* window, int key, int scancode, int action, int mods, unsigned int hoverPolyID);
+
+    
 };
 
 inline void App::newScene()
@@ -42,7 +54,7 @@ inline Scene App::getScene(int index)
     return scenes[index];
 }
 
-inline void App::newActiveTool(string newToolName) 
+inline void App::newActiveTool(Tool* tool, string newToolName) 
 {
     if (activeTool != nullptr) {
         delete activeTool;
@@ -63,11 +75,39 @@ inline void App::executeTool()
         return;
 
     Mesh* mesh = scenes[0].getMeshPointer(0);
-
     activeTool->mergeIntoMaster(mesh, commandData);
+    socketManager.sendCommand(commandData);
     updateScene = true;
 
     activeTool->stateToInit();
+}
+
+inline void App::executeExternalTool()
+{
+    
+     if (externalTool != nullptr) {
+        delete externalTool;
+        externalTool = nullptr;
+    }
+
+    if (externalCommand.toolName == "EXTRUDE")
+        externalTool = new Tool_extrude;
+    else if (externalCommand.toolName == "LOOPCUT")
+        externalTool = new Tool_loopcut;
+    Mesh* mesh = scenes[0].getMeshPointer(0);
+    externalTool->mergeIntoMaster(mesh, externalCommand);
+    
+    updateScene = true;
+
+    if(activeTool && (externalCommand.polyID == activeTool->runningPolyID))
+        activeTool->RMB_Click();
+
+    if (externalTool != nullptr) {
+        delete externalTool;
+        externalTool = nullptr;
+    }
+    
+
 }
 
 inline void App::updateMasterMesh(unsigned int VBO[])
@@ -103,10 +143,7 @@ inline void App::updateMasterMesh(unsigned int VBO[])
             vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
             first = first->next;
             vboEdge.push_back(Vertex(first->vertex->position[0], first->vertex->position[1], first->vertex->position[2]));
-
         }
-
-      
     }
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
@@ -123,5 +160,66 @@ inline void App::updateMasterMesh(unsigned int VBO[])
 	glBindVertexArray(0);
 }
 
+void App::keyInput(GLFWwindow* window, int key, int scancode, int action, int mods, unsigned int hoverPolyID)
+{
+    string newToolName;
+
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (key == GLFW_KEY_TAB && action == GLFW_PRESS)
+    {
+        if (mainMode == Mode::object) {
+            mainMode = Mode::edit;
+            std::cout << "EDIT MODE" << std::endl;
+        }
+        else {
+            mainMode = Mode::object;
+            std::cout << "OBJECT MODE" << std::endl;
+
+        }
+        
+    }
+
+    if (key == GLFW_KEY_E && action == GLFW_PRESS) 
+    {
+        newToolName = "EXTRUDE";
+        newActiveTool(activeTool, newToolName);
+
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+
+        if(hoverPolyID != -1) {
+            activeTool->Execute(xpos, ypos, hoverPolyID, getScene(0).getMeshPointer(0));
+        }
+        
+    }
+
+     if (key == GLFW_KEY_C && action == GLFW_PRESS) 
+    {
+        Mesh mesh = getScene(0).getMesh(0);
+
+        for (int i = 0; i < mesh.FaceList.size(); i++) {
+        
+            std::cout << "Face " << i << std::endl;
+            HEdge* first = mesh.FaceList[i].edge;
+
+            if(first == nullptr)
+                continue;
+
+            HEdge* edge = first;
+
+            for (int hh = 0; hh < 4; hh++) {
+                std::cout << "x: " << edge->vertex->position[0] << " y: " << edge->vertex->position[1] << " z: " << edge->vertex->position[2] << std::endl;
+                edge = edge->next;
+            } 
+        }
+    }
+}
+
+inline Mode App::getMode()
+{
+    return mainMode;
+}
 
 #endif

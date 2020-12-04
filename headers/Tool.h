@@ -10,6 +10,7 @@ struct CommandInfo
     unsigned int polyID;
     float amount;
     bool ready;
+    string order;
 };
 
 class Tool 
@@ -34,6 +35,7 @@ public:
 
     virtual CommandInfo isReadyToExecute() {}; // this is run in main.. listeting if tool needs to be executed.
     virtual void mergeIntoMaster(Mesh* mesh, CommandInfo commandInfo) {};
+    virtual void mergeExternalCommand() {};
 
     void stateToInit();
 

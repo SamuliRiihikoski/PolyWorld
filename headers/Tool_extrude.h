@@ -187,6 +187,7 @@ inline CommandInfo Tool_extrude::isReadyToExecute()
         toolInfo.polyID = runningPolyID;
         toolInfo.ready = true;
         toolInfo.toolName = "EXTRUDE";
+        toolInfo.order = "FIRST";
     }
     else
     {
@@ -195,6 +196,7 @@ inline CommandInfo Tool_extrude::isReadyToExecute()
         toolInfo.polyID = runningPolyID;
         toolInfo.ready = false;
         toolInfo.toolName = "EXTRUDE";
+        toolInfo.order = "FIRST";
     }
     
 
@@ -203,15 +205,15 @@ inline CommandInfo Tool_extrude::isReadyToExecute()
 
 inline void Tool_extrude::mergeIntoMaster(Mesh* mesh, CommandInfo commandInfo)
 {
-    std::cout << "MERGING" << std::endl;
-
     float kerroin = commandInfo.amount * 0.01;
     glm::vec3 normalID = polyIdNormal(commandInfo.polyID, mesh);
+    std::cout << "AAA" << std::endl;
+
     normalID = glm::normalize(normalID);
     glm::vec3 tempVec;
-
     HEdge* start = mesh->FaceList[commandInfo.polyID].edge;
     HEdge* loopEdge = start;
+    
 
     do {
 
@@ -225,7 +227,8 @@ inline void Tool_extrude::mergeIntoMaster(Mesh* mesh, CommandInfo commandInfo)
         loopEdge = loopEdge->next;
 
     } while (loopEdge != start);
-    
+          
+
     mesh->HEdgeList[mesh->HEdgeList.size()-4].next = &mesh->HEdgeList[mesh->HEdgeList.size()-3];
     mesh->HEdgeList[mesh->HEdgeList.size()-3].next = &mesh->HEdgeList[mesh->HEdgeList.size()-2];
     mesh->HEdgeList[mesh->HEdgeList.size()-2].next = &mesh->HEdgeList[mesh->HEdgeList.size()-1];
@@ -296,8 +299,13 @@ inline void Tool_extrude::mergeIntoMaster(Mesh* mesh, CommandInfo commandInfo)
     TMesh.FaceList.clear();
     TMesh.VertexList.clear();
     TMesh.HEdgeList.clear();
-
+    
     updateToolMesh();
+}
+
+inline void mergeExternalCommand()
+{
+
 }
 
 #endif
