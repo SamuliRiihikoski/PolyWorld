@@ -118,9 +118,8 @@ inline void SocketManager::checkConn()
 
 inline void SocketManager::sendCommand(CommandInfo commandData)
 {
-    stringstream ss;
-    ss << "EXTRUDE " << commandData.polyID << " " << commandData.amount;
-    string text = ss.str();
+    
+    string text = "EXTRUDE " + to_string(commandData.polyID) + " " + to_string(commandData.amount);
     sendToolAction = true;
     const char* read = text.c_str();
     int bytes_send = send(socket_peer, read, strlen(read), 0);
