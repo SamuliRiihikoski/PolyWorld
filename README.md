@@ -7,6 +7,13 @@ E = Hover on polygon and then press E key to extrude it. Pressing LMB will compl
 
 COMPILE IN LINUX:
 g++ main.cpp -lglfw -lGL -lglut -lGLEW -lpthread -o demo -fpermissive
+or
+download exe file from here:
+[a link](https://drive.google.com/file/d/1tGsz8tp9SbfPckJs9QbK-90Ge_4UvoCa/view?usp=sharing)
+
+RUN FILE: ./demo 18.191.183.210 8080
+
+
 
 v0.04
 
