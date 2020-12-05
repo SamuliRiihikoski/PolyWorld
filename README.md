@@ -1,15 +1,12 @@
 New 3d modelling app. Testing on linux only but this should also work in Windows OS.
 
-HOW TO USE:
-LMB = Rotate the scene (make sure cursor is in background)
-RMB = Zoom in/out.
-E = Hover on polygon and then press E key to extrude it. Pressing LMB will complete the action.
+HOW TO USE:  
+LMB = Rotate the scene (make sure cursor is in background)  
+RMB = Zoom in/out.  
+E = Hover on polygon and then press E key to extrude it. Pressing LMB will complete the action.  
 
 COMPILE IN LINUX:
 g++ main.cpp -lglfw -lGL -lglut -lGLEW -lpthread -o demo -fpermissive
-
-COMPILE IN WINDOWS:
-???
 
 v0.04
 
