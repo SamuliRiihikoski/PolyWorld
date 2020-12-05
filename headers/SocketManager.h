@@ -49,6 +49,14 @@ public:
 
 inline bool SocketManager::createConn(int argc, char* argv[])
 {
+    #if defined(_WIN32)
+        WSADATA d;
+        if (WSAStartup(MAKEWORD(2, 2), &d)) {
+            fsprintf(stderr, "Failed to initialize.\n");
+            return false;
+        }
+    #endif
+
     if (argc < 3) {
         std::cout << "Usage: Polyland hostname port\n" << std::endl;
         return false;
@@ -138,9 +146,9 @@ void* SocketManager::socketLoop(void* param)
         FD_ZERO(&reads);
         
         FD_SET(socket_peer, &reads);
-        
+    #if !defined(_WIN32)
         FD_SET(0, &reads);
-        
+    #endif
         if (select(socket_peer+1, &reads, 0, 0, NULL) < 0) {
             fprintf(stderr, "select() Failed. (%d)\n", errno);
             return;
