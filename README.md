@@ -1,4 +1,4 @@
-New 3d modelling app. Testing on linux only but this should also work in Windows OS.
+New 3d modelling app. Works only linux at the moment.
 
 HOW TO USE:  
 LMB = Rotate the scene (make sure cursor is in background)  
