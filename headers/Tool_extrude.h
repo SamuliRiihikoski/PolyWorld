@@ -97,7 +97,7 @@ inline Tool_extrude::Tool_extrude()
 inline void Tool_extrude::LMB_Click()
 {
    
-    std::cout << "LMB_Press: Extrude" << std::endl;
+    //std::cout << "LMB_Press: Extrude" << std::endl;
     if (state == State::running) {
         state = State::execute;
     }
@@ -112,7 +112,7 @@ inline void Tool_extrude::RMB_Click()
     state = State::init;
     updateToolMesh();
 
-    std::cout << "RMB_Press: Cancel Extrude" << std::endl;
+    //std::cout << "RMB_Press: Cancel Extrude" << std::endl;
 }
 
 inline void Tool_extrude::Execute(double& xpos, double& ypos, unsigned int polyID, Mesh* mesh)
@@ -207,7 +207,6 @@ inline void Tool_extrude::mergeIntoMaster(Mesh* mesh, CommandInfo commandInfo)
 {
     float kerroin = commandInfo.amount * 0.01;
     glm::vec3 normalID = polyIdNormal(commandInfo.polyID, mesh);
-    std::cout << "AAA" << std::endl;
 
     normalID = glm::normalize(normalID);
     glm::vec3 tempVec;

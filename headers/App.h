@@ -15,7 +15,7 @@ enum class SelMode {vertex, edge, face, multi};
 class App
 {
     std::vector<Scene> scenes;  
-    Mode mainMode = Mode::object;
+    Mode mainMode = Mode::edit; // Should be object mode in start
     SelMode selMode = SelMode::face;
  
 

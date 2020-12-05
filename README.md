@@ -1,5 +1,10 @@
 New 3d modelling app. Testing on linux only but this should also work in Windows OS.
 
+HOW TO USE:
+LMB = Rotate the scene (make sure cursor is in background)
+RMB = Zoom in/out.
+E = Hover on polygon and then press E key to extrude it. Pressing LMB will complete the action.
+
 v0.04
 
 - Hover select use cpu threads. Still uses deque instead vectors.  

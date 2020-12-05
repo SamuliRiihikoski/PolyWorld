@@ -130,7 +130,7 @@ void* SocketManager::socketLoop(void* param)
 
     while(1)
     {
-        std::cout << "  " << std::endl;
+        std::cout << "  " << std::endl; // Without this dosent send. DONT REMOVE
         sleep(1);
         
         fd_set reads;
@@ -168,8 +168,6 @@ void* SocketManager::socketLoop(void* param)
             externalCommand.order = "SECOND";
 
             externalCommandReady = true;
-
-            std::cout <<"Tooltype: "<< toolType << " polyID: " << polyID << " amount: " << amount << std::endl; 
 
         }        
 
