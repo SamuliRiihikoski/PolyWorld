@@ -7,7 +7,7 @@ E = Hover on polygon and then press E key to extrude it. Pressing LMB will compl
 
 DOWNLOAD DEBIAN: .deb file is in debian folder.
   
-RUN FILE: ./demo 18.191.183.210 8080  
+RUN FILE: ./demo 3.138.155.85 8080  
 
 
 
