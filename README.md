@@ -6,8 +6,10 @@ RMB = Zoom in/out.
 E = Hover on polygon and then press E key to extrude it. Pressing LMB will complete the action.  
 
 DOWNLOAD DEBIAN: .deb file is in debian folder.
+
+debian install files into /home/Polyland location
   
-RUN FILE: ./demo 3.138.155.85 8080  
+RUN FILE: ./Polyland 3.138.155.85 8080  
 
 
 
