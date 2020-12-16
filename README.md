@@ -5,11 +5,7 @@ LMB = Rotate the scene (make sure cursor is in background)
 RMB = Zoom in/out.  
 E = Hover on polygon and then press E key to extrude it. Pressing LMB will complete the action.  
 
-COMPILE IN LINUX:  
-g++ main.cpp -lglfw -lGL -lglut -lGLEW -lpthread -o demo -fpermissive  
-or  
-download exe file from here:  
-[a link](https://drive.google.com/file/d/1tGsz8tp9SbfPckJs9QbK-90Ge_4UvoCa/view?usp=sharing)  
+DOWNLOAD DEBIAN: .deb file is in debian folder.
   
 RUN FILE: ./demo 18.191.183.210 8080  
 
